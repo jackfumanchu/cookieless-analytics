@@ -1,0 +1,17 @@
+doctrine:
+    dbal:
+        driver: pdo_pgsql
+        url: 'postgresql://postgres:postgres@localhost/cookieless_analytics_test'
+        server_version: '18.3'
+    orm:
+        auto_generate_proxy_classes: true
+        enable_lazy_ghost_objects: true
+        enable_native_lazy_objects: true
+        auto_mapping: true
+        mappings:
+            CookielessAnalyticsBundle:
+                is_bundle: false
+                type: attribute
+                dir: '%kernel.project_dir%/../../src/Entity'
+                prefix: 'Jackfumanchu\CookielessAnalyticsBundle\Entity'
+                alias: CookielessAnalytics

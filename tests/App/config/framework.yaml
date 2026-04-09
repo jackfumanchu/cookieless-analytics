@@ -1,0 +1,8 @@
+framework:
+    test: true
+    secret: 'test-secret'
+    http_method_override: false
+    handle_all_throwables: true
+    router:
+        resource: '%kernel.project_dir%/config/routes.php'
+        utf8: true

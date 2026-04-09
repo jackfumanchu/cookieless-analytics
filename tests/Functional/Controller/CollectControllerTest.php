@@ -11,6 +11,15 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class CollectControllerTest extends WebTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $kernel = static::bootKernel();
+        $em = $kernel->getContainer()->get('test.service_container')->get(EntityManagerInterface::class);
+        $em->createQuery('DELETE FROM ' . PageView::class)->execute();
+        static::ensureKernelShutdown();
+    }
+
     #[Test]
     public function collect_with_valid_payload_returns_204_and_persists(): void
     {

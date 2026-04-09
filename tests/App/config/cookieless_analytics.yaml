@@ -1,0 +1,8 @@
+cookieless_analytics:
+    collect_prefix: '/ca'
+    strip_query_params:
+        - token
+        - password
+        - key
+        - secret
+        - email

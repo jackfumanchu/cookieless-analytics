@@ -1,0 +1,52 @@
+{
+    "name": "jackfumanchu/cookieless-analytics-bundle",
+    "description": "Lightweight, cookieless, GDPR-compliant analytics bundle for Symfony 7.4+",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "jackfumanchu"
+        }
+    ],
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=8.2",
+        "doctrine/dbal": "^4.0",
+        "doctrine/orm": "^3.0",
+        "symfony/framework-bundle": "^7.4 || ^8.0",
+        "twig/twig": "^3.0 || ^4.0"
+    },
+    "require-dev": {
+        "doctrine/doctrine-bundle": "^2.13",
+        "friendsofphp/php-cs-fixer": "^3.94",
+        "infection/infection": "^0.32.6",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-doctrine": "^2.0",
+        "phpstan/phpstan-symfony": "^2.0",
+        "phpunit/phpunit": "^13.1",
+        "symfony/browser-kit": "^7.4 || ^8.0",
+        "symfony/css-selector": "^7.4 || ^8.0",
+        "symfony/twig-bundle": "^7.4 || ^8.0",
+        "symfony/var-exporter": "^8.0",
+        "symfony/yaml": "^8.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "infection/extension-installer": true,
+            "phpstan/extension-installer": true
+        },
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Jackfumanchu\\CookielessAnalyticsBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jackfumanchu\\CookielessAnalyticsBundle\\Tests\\": "tests/"
+        }
+    }
+}

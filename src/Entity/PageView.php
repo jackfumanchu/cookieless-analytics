@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'ca_page_view')]
 #[ORM\Index(columns: ['fingerprint'], name: 'idx_fingerprint')]
 #[ORM\Index(columns: ['viewed_at'], name: 'idx_viewed_at')]
-#[ORM\Index(columns: ['page_url'], name: 'idx_page_url', options: ['lengths' => [255]])]
+#[ORM\Index(columns: ['page_url'], name: 'idx_page_url')]
 class PageView
 {
     #[ORM\Id]
@@ -22,13 +22,13 @@ class PageView
     #[ORM\Column(type: Types::STRING, length: 64)]
     private string $fingerprint;
 
-    #[ORM\Column(type: Types::STRING, length: 2048)]
+    #[ORM\Column(type: Types::STRING, length: 2048, name: 'page_url')]
     private string $pageUrl;
 
     #[ORM\Column(type: Types::STRING, length: 2048, nullable: true)]
     private ?string $referrer;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, name: 'viewed_at')]
     private \DateTimeImmutable $viewedAt;
 
     private function __construct(
