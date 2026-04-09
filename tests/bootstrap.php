@@ -14,14 +14,7 @@ require dirname(__DIR__) . '/vendor/autoload.php';
     $schemaTool = new \Doctrine\ORM\Tools\SchemaTool($em);
     $metadata = $em->getMetadataFactory()->getAllMetadata();
 
-    // Drop existing tables directly via DBAL, then recreate schema
-    $connection = $em->getConnection();
-    $schemaManager = $connection->createSchemaManager();
-    $existingTables = $schemaManager->listTableNames();
-    foreach ($existingTables as $table) {
-        $schemaManager->dropTable($table);
-    }
-
+    $schemaTool->dropSchema($metadata);
     $schemaTool->createSchema($metadata);
 
     $kernel->shutdown();
