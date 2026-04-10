@@ -13,9 +13,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 
-use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
-use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
-
 class CookielessAnalyticsBundle extends AbstractBundle
 {
     public function configure(DefinitionConfigurator $definition): void
@@ -40,18 +37,19 @@ class CookielessAnalyticsBundle extends AbstractBundle
 
         $services = $container->services();
 
-        $services->set(FingerprintGenerator::class);
+        $services->set(FingerprintGenerator::class)
+            ->autowire();
 
         $services->set(UrlSanitizer::class)
+            ->autowire()
             ->arg('$stripParams', $config['strip_query_params']);
 
         $services->set(CollectController::class)
-            ->arg('$fingerprintGenerator', service(FingerprintGenerator::class))
-            ->arg('$urlSanitizer', service(UrlSanitizer::class))
-            ->arg('$entityManager', service('doctrine.orm.entity_manager'))
+            ->autowire()
             ->tag('controller.service_arguments');
 
         $services->set(CookielessAnalyticsExtension::class)
+            ->autowire()
             ->arg('$collectUrl', $config['collect_prefix'])
             ->tag('twig.extension');
     }
