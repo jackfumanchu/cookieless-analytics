@@ -75,6 +75,30 @@ class AnalyticsEventRepository extends ServiceEntityRepository
     /**
      * @return list<array{date: string, count: int}>
      */
+    public function countByDayForEvent(string $name, \DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = <<<'SQL'
+            SELECT
+                TO_CHAR(recorded_at, 'YYYY-MM-DD') AS date,
+                COUNT(*) AS count
+            FROM ca_analytics_event
+            WHERE recorded_at >= :from AND recorded_at <= :to AND name = :name
+            GROUP BY date
+            ORDER BY date ASC
+        SQL;
+
+        return $conn->executeQuery($sql, [
+            'from' => $from->format('Y-m-d H:i:s'),
+            'to' => $to->format('Y-m-d H:i:s'),
+            'name' => $name,
+        ])->fetchAllAssociative();
+    }
+
+    /**
+     * @return list<array{date: string, count: int}>
+     */
     public function countByDay(\DateTimeImmutable $from, \DateTimeImmutable $to): array
     {
         $conn = $this->getEntityManager()->getConnection();

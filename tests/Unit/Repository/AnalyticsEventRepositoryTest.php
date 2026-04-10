@@ -134,6 +134,26 @@ class AnalyticsEventRepositoryTest extends KernelTestCase
     }
 
     #[Test]
+    public function count_by_day_for_event_filters_by_name(): void
+    {
+        $this->createEvent('click-cta', '2026-04-05 10:00:00');
+        $this->createEvent('click-cta', '2026-04-05 11:00:00');
+        $this->createEvent('signup', '2026-04-05 12:00:00');
+        $this->createEvent('click-cta', '2026-04-06 10:00:00');
+
+        $from = new \DateTimeImmutable('2026-04-05 00:00:00');
+        $to = new \DateTimeImmutable('2026-04-06 23:59:59');
+
+        $result = $this->repository->countByDayForEvent('click-cta', $from, $to);
+
+        self::assertCount(2, $result);
+        self::assertSame('2026-04-05', $result[0]['date']);
+        self::assertSame(2, (int) $result[0]['count']);
+        self::assertSame('2026-04-06', $result[1]['date']);
+        self::assertSame(1, (int) $result[1]['count']);
+    }
+
+    #[Test]
     public function count_by_day_returns_daily_breakdown(): void
     {
         $this->createEvent('click-cta', '2026-04-05 10:00:00');
