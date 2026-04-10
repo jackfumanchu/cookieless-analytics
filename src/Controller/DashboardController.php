@@ -10,6 +10,8 @@ use Jackfumanchu\CookielessAnalyticsBundle\Service\DateRangeResolver;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparer;
 use Composer\InstalledVersions;
+use Jackfumanchu\CookielessAnalyticsBundle\Service\DateRange;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -43,6 +45,10 @@ class DashboardController
             is_string($to) ? $to : null,
         );
 
+        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
+            return $redirect;
+        }
+
         $version = InstalledVersions::getVersion('jackfumanchu/cookieless-analytics-bundle') ?? '0.0.0';
         $earliest = $this->pageViewRepo->findEarliestViewedAt();
         $daysActive = $earliest !== null ? (int) $earliest->diff(new \DateTimeImmutable('today'))->days + 1 : 0;
@@ -67,6 +73,10 @@ class DashboardController
             $request->query->getString('from') ?: null,
             $request->query->getString('to') ?: null,
         );
+
+        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
+            return $redirect;
+        }
 
         $pageViews = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countByPeriod(...));
         $uniqueVisitors = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countUniqueVisitorsByPeriod(...));
@@ -100,6 +110,10 @@ class DashboardController
             $request->query->getString('to') ?: null,
         );
 
+        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
+            return $redirect;
+        }
+
         $daily = $this->pageViewRepo->countByDay($dateRange->from, $dateRange->to);
 
         $dates = array_map(fn (array $row) => $row['date'], $daily);
@@ -125,6 +139,10 @@ class DashboardController
             $request->query->getString('to') ?: null,
         );
 
+        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
+            return $redirect;
+        }
+
         $pages = $this->pageViewRepo->findTopPages($dateRange->from, $dateRange->to, 10);
 
         $html = $this->twig->render('@CookielessAnalytics/dashboard/_top_pages.html.twig', [
@@ -143,6 +161,10 @@ class DashboardController
             $request->query->getString('from') ?: null,
             $request->query->getString('to') ?: null,
         );
+
+        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
+            return $redirect;
+        }
 
         $referrers = $this->pageViewRepo->findTopReferrers($dateRange->from, $dateRange->to, 10);
         $totalVisits = array_sum(array_column($referrers, 'visits'));
@@ -165,6 +187,10 @@ class DashboardController
             $request->query->getString('to') ?: null,
         );
 
+        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
+            return $redirect;
+        }
+
         $events = $this->eventRepo->findTopEvents($dateRange->from, $dateRange->to, 10);
 
         $html = $this->twig->render('@CookielessAnalytics/dashboard/_events.html.twig', [
@@ -172,6 +198,22 @@ class DashboardController
         ]);
 
         return new Response($html);
+    }
+
+    private function redirectIfDatesNormalized(Request $request, DateRange $dateRange): ?RedirectResponse
+    {
+        $inputFrom = $request->query->getString('from');
+        $inputTo = $request->query->getString('to');
+        $resolvedFrom = $dateRange->from->format('Y-m-d');
+        $resolvedTo = $dateRange->to->format('Y-m-d');
+
+        if ($inputFrom !== '' && $inputTo !== '' && ($inputFrom !== $resolvedFrom || $inputTo !== $resolvedTo)) {
+            $url = $request->getPathInfo() . '?' . http_build_query(['from' => $resolvedFrom, 'to' => $resolvedTo]);
+
+            return new RedirectResponse($url, 302);
+        }
+
+        return null;
     }
 
     private function denyAccessUnlessGranted(): void

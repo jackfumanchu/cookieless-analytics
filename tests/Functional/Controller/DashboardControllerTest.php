@@ -216,4 +216,35 @@ class DashboardControllerTest extends WebTestCase
         self::assertStringContainsString('2', $content); // 2 page views
         self::assertStringContainsString('ca-overview', $content);
     }
+
+    #[Test]
+    public function index_redirects_when_dates_are_normalized(): void
+    {
+        $client = static::createClient();
+
+        // Feb 29 in a non-leap year rolls to Mar 1
+        $client->request('GET', '/analytics/?from=2026-02-29&to=2026-04-10');
+
+        self::assertResponseRedirects('/analytics/?from=2026-03-01&to=2026-04-10');
+    }
+
+    #[Test]
+    public function referrers_redirects_when_dates_are_normalized(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/analytics/referrers?from=2026-04-31&to=2026-05-10');
+
+        self::assertResponseRedirects('/analytics/referrers?from=2026-05-01&to=2026-05-10');
+    }
+
+    #[Test]
+    public function index_does_not_redirect_with_valid_dates(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/analytics/?from=2026-04-01&to=2026-04-10');
+
+        self::assertResponseStatusCodeSame(200);
+    }
 }
