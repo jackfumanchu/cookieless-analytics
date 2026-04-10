@@ -15,8 +15,11 @@
         "doctrine/dbal": "^4.0",
         "doctrine/orm": "^3.0",
         "symfony/framework-bundle": "^7.4 || ^8.0",
-        "symfony/security-core": "^8.0",
+        "symfony/security-core": "^7.4 || ^8.0",
         "twig/twig": "^3.0 || ^4.0"
+    },
+    "suggest": {
+        "symfony/ux-turbo": "For lazy-loading dashboard widgets via Turbo Frames"
     },
     "require-dev": {
         "doctrine/doctrine-bundle": "^2.13",
