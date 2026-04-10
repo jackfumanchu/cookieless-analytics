@@ -117,6 +117,31 @@ class DashboardControllerTest extends WebTestCase
     }
 
     #[Test]
+    public function trends_returns_chart_container_with_data(): void
+    {
+        $client = static::createClient();
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $em->persist(PageView::create(
+            fingerprint: str_repeat('a', 64),
+            pageUrl: '/home',
+            referrer: null,
+            viewedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->flush();
+
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/trends?from=' . $today . '&to=' . $today);
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        self::assertStringContainsString('ca-trends', $content);
+        self::assertStringContainsString('data-chart-dates-value', $content);
+        self::assertStringContainsString('data-chart-views-value', $content);
+        self::assertStringContainsString('data-chart-visitors-value', $content);
+    }
+
+    #[Test]
     public function overview_returns_kpi_cards(): void
     {
         $client = static::createClient();

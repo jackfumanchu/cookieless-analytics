@@ -86,7 +86,26 @@ class DashboardController
     #[Route(path: '/trends', name: 'cookieless_analytics_dashboard_trends', methods: ['GET'])]
     public function trends(Request $request): Response
     {
-        return new Response('<turbo-frame id="ca-trends"><p>Coming soon</p></turbo-frame>');
+        $this->denyAccessUnlessGranted();
+
+        $dateRange = $this->dateRangeResolver->resolve(
+            $request->query->getString('from') ?: null,
+            $request->query->getString('to') ?: null,
+        );
+
+        $daily = $this->pageViewRepo->countByDay($dateRange->from, $dateRange->to);
+
+        $dates = array_map(fn (array $row) => $row['date'], $daily);
+        $views = array_map(fn (array $row) => (int) $row['count'], $daily);
+        $visitors = array_map(fn (array $row) => (int) $row['unique'], $daily);
+
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/_trends.html.twig', [
+            'dates' => json_encode($dates),
+            'views' => json_encode($views),
+            'visitors' => json_encode($visitors),
+        ]);
+
+        return new Response($html);
     }
 
     #[Route(path: '/top-pages', name: 'cookieless_analytics_dashboard_top_pages', methods: ['GET'])]
