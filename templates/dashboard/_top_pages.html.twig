@@ -1,25 +1,28 @@
 <turbo-frame id="ca-top-pages">
-    <h2>Top pages</h2>
-    <table class="ca-table">
-        <thead>
-            <tr>
-                <th>URL</th>
-                <th>Pages vues</th>
-                <th>Visiteurs uniques</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for page in pages %}
-            <tr>
-                <td class="ca-table__url" title="{{ page.pageUrl }}">{{ page.pageUrl }}</td>
-                <td>{{ page.views }}</td>
-                <td>{{ page.uniqueVisitors }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="3">Aucune donnée pour cette période</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <h2 class="section-head">Top Pages</h2>
+  <p class="section-deck">Most visited pages this period, ranked by total views.</p>
+  <table class="ed-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th style="text-align:left;">Page</th>
+        <th>Views</th>
+        <th>Uniq.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for page in pages %}
+      <tr>
+        <td class="rank-col">{{ '%02d'|format(loop.index) }}</td>
+        <td class="page-col" title="{{ page.pageUrl }}">{{ page.pageUrl }}</td>
+        <td class="num-col">{{ page.views|number_format(0, '.', ',') }}</td>
+        <td class="num-col">{{ page.uniqueVisitors|number_format(0, '.', ',') }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="4" style="font-family:var(--editorial);color:var(--ink-muted);padding:16px 0;">No data for this period</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </turbo-frame>
