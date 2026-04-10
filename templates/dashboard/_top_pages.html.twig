@@ -1,0 +1,25 @@
+<turbo-frame id="ca-top-pages">
+    <h2>Top pages</h2>
+    <table class="ca-table">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>Pages vues</th>
+                <th>Visiteurs uniques</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for page in pages %}
+            <tr>
+                <td class="ca-table__url" title="{{ page.pageUrl }}">{{ page.pageUrl }}</td>
+                <td>{{ page.views }}</td>
+                <td>{{ page.uniqueVisitors }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">Aucune donnée pour cette période</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</turbo-frame>

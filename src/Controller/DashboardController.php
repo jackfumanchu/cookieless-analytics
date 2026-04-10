@@ -92,7 +92,20 @@ class DashboardController
     #[Route(path: '/top-pages', name: 'cookieless_analytics_dashboard_top_pages', methods: ['GET'])]
     public function topPages(Request $request): Response
     {
-        return new Response('<turbo-frame id="ca-top-pages"><p>Coming soon</p></turbo-frame>');
+        $this->denyAccessUnlessGranted();
+
+        $dateRange = $this->dateRangeResolver->resolve(
+            $request->query->getString('from') ?: null,
+            $request->query->getString('to') ?: null,
+        );
+
+        $pages = $this->pageViewRepo->findTopPages($dateRange->from, $dateRange->to, 10);
+
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/_top_pages.html.twig', [
+            'pages' => $pages,
+        ]);
+
+        return new Response($html);
     }
 
     #[Route(path: '/events', name: 'cookieless_analytics_dashboard_events', methods: ['GET'])]
