@@ -51,7 +51,36 @@ class DashboardController
     #[Route(path: '/overview', name: 'cookieless_analytics_dashboard_overview', methods: ['GET'])]
     public function overview(Request $request): Response
     {
-        return new Response('<turbo-frame id="ca-overview"><p>Coming soon</p></turbo-frame>');
+        $this->denyAccessUnlessGranted();
+
+        $dateRange = $this->dateRangeResolver->resolve(
+            $request->query->getString('from') ?: null,
+            $request->query->getString('to') ?: null,
+        );
+
+        $pageViews = $this->pageViewRepo->countByPeriod($dateRange->from, $dateRange->to);
+        $uniqueVisitors = $this->pageViewRepo->countUniqueVisitorsByPeriod($dateRange->from, $dateRange->to);
+        $events = $this->eventRepo->countByPeriod($dateRange->from, $dateRange->to);
+        $pagesPerVisitor = $uniqueVisitors > 0 ? round($pageViews / $uniqueVisitors, 1) : 0;
+
+        // Comparison period
+        $prevPageViews = $this->pageViewRepo->countByPeriod($dateRange->comparisonFrom, $dateRange->comparisonTo);
+        $prevUniqueVisitors = $this->pageViewRepo->countUniqueVisitorsByPeriod($dateRange->comparisonFrom, $dateRange->comparisonTo);
+        $prevEvents = $this->eventRepo->countByPeriod($dateRange->comparisonFrom, $dateRange->comparisonTo);
+        $prevPagesPerVisitor = $prevUniqueVisitors > 0 ? round($prevPageViews / $prevUniqueVisitors, 1) : 0;
+
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/_overview.html.twig', [
+            'pageViews' => $pageViews,
+            'uniqueVisitors' => $uniqueVisitors,
+            'events' => $events,
+            'pagesPerVisitor' => $pagesPerVisitor,
+            'prevPageViews' => $prevPageViews,
+            'prevUniqueVisitors' => $prevUniqueVisitors,
+            'prevEvents' => $prevEvents,
+            'prevPagesPerVisitor' => $prevPagesPerVisitor,
+        ]);
+
+        return new Response($html);
     }
 
     #[Route(path: '/trends', name: 'cookieless_analytics_dashboard_trends', methods: ['GET'])]

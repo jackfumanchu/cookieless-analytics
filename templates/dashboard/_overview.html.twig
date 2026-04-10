@@ -1,0 +1,21 @@
+<turbo-frame id="ca-overview">
+    <div class="ca-kpi-grid">
+        {% for card in [
+            {label: 'Pages vues', value: pageViews, prev: prevPageViews},
+            {label: 'Visiteurs uniques', value: uniqueVisitors, prev: prevUniqueVisitors},
+            {label: 'Événements', value: events, prev: prevEvents},
+            {label: 'Pages/visiteur', value: pagesPerVisitor, prev: prevPagesPerVisitor},
+        ] %}
+        <div class="ca-kpi-card">
+            <span class="ca-kpi-card__label">{{ card.label }}</span>
+            <span class="ca-kpi-card__value">{{ card.value }}</span>
+            {% if card.prev > 0 %}
+                {% set change = ((card.value - card.prev) / card.prev * 100)|round(1) %}
+                <span class="ca-kpi-card__change {{ change >= 0 ? 'ca-kpi-card__change--up' : 'ca-kpi-card__change--down' }}">
+                    {{ change >= 0 ? '↑' : '↓' }} {{ change|abs }}%
+                </span>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</turbo-frame>

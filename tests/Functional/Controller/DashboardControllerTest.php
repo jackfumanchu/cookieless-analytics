@@ -4,11 +4,24 @@ declare(strict_types=1);
 
 namespace Jackfumanchu\CookielessAnalyticsBundle\Tests\Functional\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Jackfumanchu\CookielessAnalyticsBundle\Entity\AnalyticsEvent;
+use Jackfumanchu\CookielessAnalyticsBundle\Entity\PageView;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class DashboardControllerTest extends WebTestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $kernel = static::bootKernel();
+        $em = $kernel->getContainer()->get('test.service_container')->get(EntityManagerInterface::class);
+        $em->createQuery('DELETE FROM ' . PageView::class)->execute();
+        $em->createQuery('DELETE FROM ' . AnalyticsEvent::class)->execute();
+        static::ensureKernelShutdown();
+    }
+
     #[Test]
     public function index_returns_200_with_dashboard_content(): void
     {
@@ -34,5 +47,41 @@ class DashboardControllerTest extends WebTestCase
         self::assertSelectorExists('[data-controller="date-range"]');
         self::assertSelectorExists('input[name="from"]');
         self::assertSelectorExists('input[name="to"]');
+    }
+
+    #[Test]
+    public function overview_returns_kpi_cards(): void
+    {
+        $client = static::createClient();
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $em->persist(PageView::create(
+            fingerprint: str_repeat('a', 64),
+            pageUrl: '/home',
+            referrer: null,
+            viewedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->persist(PageView::create(
+            fingerprint: str_repeat('b', 64),
+            pageUrl: '/about',
+            referrer: null,
+            viewedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->persist(AnalyticsEvent::create(
+            fingerprint: str_repeat('a', 64),
+            name: 'click-cta',
+            value: null,
+            pageUrl: '/home',
+            recordedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->flush();
+
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/overview?from=' . $today . '&to=' . $today);
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        self::assertStringContainsString('2', $content); // 2 page views
+        self::assertStringContainsString('ca-overview', $content);
     }
 }
