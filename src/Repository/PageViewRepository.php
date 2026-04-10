@@ -1,0 +1,86 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Jackfumanchu\CookielessAnalyticsBundle\Repository;
+
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Persistence\ManagerRegistry;
+use Jackfumanchu\CookielessAnalyticsBundle\Entity\PageView;
+
+/**
+ * @extends ServiceEntityRepository<PageView>
+ */
+class PageViewRepository extends ServiceEntityRepository
+{
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, PageView::class);
+    }
+
+    public function countByPeriod(\DateTimeImmutable $from, \DateTimeImmutable $to): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.viewedAt >= :from')
+            ->andWhere('p.viewedAt <= :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countUniqueVisitorsByPeriod(\DateTimeImmutable $from, \DateTimeImmutable $to): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(DISTINCT p.fingerprint)')
+            ->where('p.viewedAt >= :from')
+            ->andWhere('p.viewedAt <= :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @return list<array{pageUrl: string, views: int, uniqueVisitors: int}>
+     */
+    public function findTopPages(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit = 10): array
+    {
+        return $this->createQueryBuilder('p')
+            ->select('p.pageUrl, COUNT(p.id) AS views, COUNT(DISTINCT p.fingerprint) AS uniqueVisitors')
+            ->where('p.viewedAt >= :from')
+            ->andWhere('p.viewedAt <= :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->groupBy('p.pageUrl')
+            ->orderBy('views', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<array{date: string, count: int, unique: int}>
+     */
+    public function countByDay(\DateTimeImmutable $from, \DateTimeImmutable $to): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = <<<'SQL'
+            SELECT
+                TO_CHAR(viewed_at, 'YYYY-MM-DD') AS date,
+                COUNT(*) AS count,
+                COUNT(DISTINCT fingerprint) AS unique
+            FROM ca_page_view
+            WHERE viewed_at >= :from AND viewed_at <= :to
+            GROUP BY date
+            ORDER BY date ASC
+        SQL;
+
+        return $conn->executeQuery($sql, [
+            'from' => $from->format('Y-m-d H:i:s'),
+            'to' => $to->format('Y-m-d H:i:s'),
+        ])->fetchAllAssociative();
+    }
+}

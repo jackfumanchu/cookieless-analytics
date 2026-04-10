@@ -7,7 +7,7 @@ namespace Jackfumanchu\CookielessAnalyticsBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: \Jackfumanchu\CookielessAnalyticsBundle\Repository\PageViewRepository::class)]
 #[ORM\Table(name: 'ca_page_view')]
 #[ORM\Index(columns: ['fingerprint'], name: 'idx_fingerprint')]
 #[ORM\Index(columns: ['viewed_at'], name: 'idx_viewed_at')]
