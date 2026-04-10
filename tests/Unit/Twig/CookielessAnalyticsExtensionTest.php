@@ -53,4 +53,25 @@ class CookielessAnalyticsExtensionTest extends TestCase
 
         self::assertStringContainsString("new Blob([d],{type:'application/json'})", $script);
     }
+
+    #[Test]
+    public function render_script_contains_click_listener(): void
+    {
+        $extension = new CookielessAnalyticsExtension('/ca');
+
+        $script = $extension->renderScript();
+
+        self::assertStringContainsString("closest('[data-ca-event]')", $script);
+        self::assertStringContainsString('click', $script);
+    }
+
+    #[Test]
+    public function render_script_contains_event_endpoint(): void
+    {
+        $extension = new CookielessAnalyticsExtension('/ca');
+
+        $script = $extension->renderScript();
+
+        self::assertStringContainsString('/ca/event', $script);
+    }
 }

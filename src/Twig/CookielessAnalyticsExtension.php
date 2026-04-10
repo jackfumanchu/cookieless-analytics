@@ -23,15 +23,22 @@ class CookielessAnalyticsExtension extends AbstractExtension
 
     public function renderScript(): string
     {
-        $endpoint = rtrim($this->collectUrl, '/') . '/collect';
+        $base = rtrim($this->collectUrl, '/');
+        $collectEndpoint = $base . '/collect';
+        $eventEndpoint = $base . '/event';
 
         return <<<HTML
         <script>
         (function(){
             if(typeof navigator.sendBeacon!=='function')return;
+            var b=function(u,d){navigator.sendBeacon(u,new Blob([d],{type:'application/json'}));};
             document.addEventListener('DOMContentLoaded',function(){
-                var d=JSON.stringify({url:location.pathname+location.search,referrer:document.referrer||''});
-                navigator.sendBeacon('{$endpoint}',new Blob([d],{type:'application/json'}));
+                b('{$collectEndpoint}',JSON.stringify({url:location.pathname+location.search,referrer:document.referrer||''}));
+            });
+            document.addEventListener('click',function(e){
+                var el=e.target.closest('[data-ca-event]');
+                if(!el)return;
+                b('{$eventEndpoint}',JSON.stringify({name:el.getAttribute('data-ca-event'),value:el.getAttribute('data-ca-value')||null,pageUrl:location.pathname+location.search}));
             });
         })();
         </script>
