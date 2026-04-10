@@ -1,20 +1,26 @@
 <turbo-frame id="ca-overview">
-    <div class="ca-kpi-grid">
-        {% for card in [
-            {label: 'Pages vues', comparison: pageViews},
-            {label: 'Visiteurs uniques', comparison: uniqueVisitors},
-            {label: 'Événements', comparison: events},
-            {label: 'Pages/visiteur', comparison: pagesPerVisitor},
-        ] %}
-        <div class="ca-kpi-card">
-            <span class="ca-kpi-card__label">{{ card.label }}</span>
-            <span class="ca-kpi-card__value">{{ card.comparison.currentFloat == card.comparison.current ? card.comparison.current : card.comparison.currentFloat }}</span>
-            {% if card.comparison.previous > 0 %}
-                <span class="ca-kpi-card__change {{ card.comparison.changePercent >= 0 ? 'ca-kpi-card__change--up' : 'ca-kpi-card__change--down' }}">
-                    {{ card.comparison.changePercent >= 0 ? '↑' : '↓' }} {{ card.comparison.changePercent|abs }}%
-                </span>
-            {% endif %}
-        </div>
-        {% endfor %}
+  <div class="headline-numbers">
+    {% for card in [
+      {label: 'Page Views', comparison: pageViews},
+      {label: 'Unique Visitors', comparison: uniqueVisitors},
+      {label: 'Events Tracked', comparison: events},
+      {label: 'Pages / Visitor', comparison: pagesPerVisitor},
+    ] %}
+    <div class="headline-num">
+      <div class="hn-label">{{ card.label }}</div>
+      <div class="hn-value">
+        {%- if card.comparison.currentFloat != card.comparison.current -%}
+          {{ card.comparison.currentFloat }}
+        {%- else -%}
+          {{ card.comparison.current|number_format(0, '.', ',') }}
+        {%- endif -%}
+      </div>
+      {% if card.comparison.previous > 0 %}
+        <span class="hn-change {{ card.comparison.changePercent >= 0 ? 'up' : 'down' }}">
+          {{ card.comparison.changePercent >= 0 ? '&#9650;' : '&#9660;' }} {{ card.comparison.changePercent|abs }}% vs prev. period
+        </span>
+      {% endif %}
     </div>
+    {% endfor %}
+  </div>
 </turbo-frame>
