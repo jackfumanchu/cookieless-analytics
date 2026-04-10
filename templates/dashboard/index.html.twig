@@ -1,47 +1,95 @@
 {% extends layout %}
 
 {% block body %}
-<div class="ca-dashboard">
-    <header class="ca-dashboard__header">
-        <h1>Analytics</h1>
-        <div data-controller="date-range" data-date-range-from-value="{{ from }}" data-date-range-to-value="{{ to }}">
-            <div class="ca-dashboard__shortcuts">
-                <button type="button" data-date-range-target="shortcut" data-period="today">Aujourd'hui</button>
-                <button type="button" data-date-range-target="shortcut" data-period="7days">7 jours</button>
-                <button type="button" data-date-range-target="shortcut" data-period="30days">30 jours</button>
-                <button type="button" data-date-range-target="shortcut" data-period="month">Ce mois-ci</button>
-            </div>
-            <div class="ca-dashboard__dates">
-                <input type="date" name="from" value="{{ from }}" data-date-range-target="fromInput">
-                <input type="date" name="to" value="{{ to }}" data-date-range-target="toInput">
-                <button type="button" data-action="date-range#apply">Appliquer</button>
-            </div>
-        </div>
-    </header>
+<div class="broadsheet">
 
-    <section class="ca-dashboard__kpi">
-        <turbo-frame id="ca-overview" src="{{ path('cookieless_analytics_dashboard_overview', {from: from, to: to}) }}" loading="lazy">
-            <p>Chargement...</p>
-        </turbo-frame>
-    </section>
+  {# ─── Masthead ─── #}
+  <header class="masthead">
+    <div class="masthead-above">
+      <span>Cookieless Analytics Bundle</span>
+      <span>{{ "now"|date("l, F j, Y") }}</span>
+      <span>Cookie-Free Since 2024</span>
+    </div>
+    <h1 class="masthead-title">The Analytics Record</h1>
+    <p class="masthead-subtitle">Cookieless &middot; Privacy-First &middot; Honest Data</p>
+    <div class="masthead-rule">{{ from }} &mdash; {{ to }}</div>
+  </header>
 
-    <section class="ca-dashboard__trends">
-        <turbo-frame id="ca-trends" src="{{ path('cookieless_analytics_dashboard_trends', {from: from, to: to}) }}" loading="lazy">
-            <p>Chargement...</p>
-        </turbo-frame>
-    </section>
+  {# ─── Section Nav ─── #}
+  <nav class="section-nav">
+    <a href="{{ path('cookieless_analytics_dashboard', {from: from, to: to}) }}" class="active">Overview</a>
+    <a href="{{ path('cookieless_analytics_dashboard', {from: from, to: to}) }}">Pages</a>
+    <a href="{{ path('cookieless_analytics_dashboard', {from: from, to: to}) }}">Events</a>
+    <a href="{{ path('cookieless_analytics_dashboard', {from: from, to: to}) }}">Trends</a>
+  </nav>
 
-    <section class="ca-dashboard__tables">
-        <div class="ca-dashboard__table-col">
-            <turbo-frame id="ca-top-pages" src="{{ path('cookieless_analytics_dashboard_top_pages', {from: from, to: to}) }}" loading="lazy">
-                <p>Chargement...</p>
-            </turbo-frame>
-        </div>
-        <div class="ca-dashboard__table-col">
-            <turbo-frame id="ca-events" src="{{ path('cookieless_analytics_dashboard_events', {from: from, to: to}) }}" loading="lazy">
-                <p>Chargement...</p>
-            </turbo-frame>
-        </div>
-    </section>
+  {# ─── Date Controls ─── #}
+  <div class="controls-bar" data-controller="date-range" data-date-range-from-value="{{ from }}" data-date-range-to-value="{{ to }}">
+    <div class="edition-label">Edition <span>&mdash; {{ from }} to {{ to }}</span></div>
+    <div class="controls-right">
+      <button class="period-btn" data-date-range-target="shortcut" data-period="today">1D</button>
+      <button class="period-btn" data-date-range-target="shortcut" data-period="7days">7D</button>
+      <button class="period-btn" data-date-range-target="shortcut" data-period="30days">30D</button>
+      <button class="period-btn" data-date-range-target="shortcut" data-period="month">MTD</button>
+      <span style="width:8px;"></span>
+      <input class="date-field" type="text" value="{{ from }}" data-date-range-target="fromInput" name="from">
+      <span class="date-dash">&mdash;</span>
+      <input class="date-field" type="text" value="{{ to }}" data-date-range-target="toInput" name="to">
+      <button class="period-btn" data-action="date-range#apply" style="background:var(--ink);color:var(--paper);border-color:var(--ink);">Apply</button>
+    </div>
+  </div>
+
+  {# ─── Headline Numbers (KPIs) ─── #}
+  <turbo-frame id="ca-overview" src="{{ path('cookieless_analytics_dashboard_overview', {from: from, to: to}) }}" loading="lazy">
+    <div class="headline-numbers">
+      <div class="headline-num" style="opacity:0.3;"><div class="hn-label">Loading...</div></div>
+      <div class="headline-num" style="opacity:0.3;"><div class="hn-label">Loading...</div></div>
+      <div class="headline-num" style="opacity:0.3;"><div class="hn-label">Loading...</div></div>
+      <div class="headline-num" style="opacity:0.3;"><div class="hn-label">Loading...</div></div>
+    </div>
+  </turbo-frame>
+
+  {# ─── Chart ─── #}
+  <turbo-frame id="ca-trends" src="{{ path('cookieless_analytics_dashboard_trends', {from: from, to: to}) }}" loading="lazy">
+    <div class="chart-area"><div class="chart-box" style="height:200px;opacity:0.3;"></div></div>
+  </turbo-frame>
+
+  {# ─── Three-Column Section ─── #}
+  <div class="columns">
+    <div class="column">
+      <turbo-frame id="ca-top-pages" src="{{ path('cookieless_analytics_dashboard_top_pages', {from: from, to: to}) }}" loading="lazy">
+        <h2 class="section-head">Top Pages</h2>
+        <p class="section-deck">Loading...</p>
+      </turbo-frame>
+    </div>
+
+    <div class="col-divider"></div>
+
+    <div class="column">
+      <turbo-frame id="ca-events" src="{{ path('cookieless_analytics_dashboard_events', {from: from, to: to}) }}" loading="lazy">
+        <h2 class="section-head">Events Dispatch</h2>
+        <p class="section-deck">Loading...</p>
+      </turbo-frame>
+    </div>
+
+    <div class="col-divider"></div>
+
+    <div class="column">
+      <turbo-frame id="ca-referrers" src="{{ path('cookieless_analytics_dashboard_referrers', {from: from, to: to}) }}" loading="lazy">
+        <h2 class="section-head">Sources</h2>
+        <p class="section-deck">Loading...</p>
+      </turbo-frame>
+    </div>
+  </div>
+
+  {# ─── Folio ─── #}
+  <footer class="folio">
+    The Analytics Record &middot; Published continuously since 2024
+    <div class="shield">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l5.5 2v4c0 3.5-2.5 6-5.5 7.5-3-1.5-5.5-4-5.5-7.5v-4z"/><polyline points="5.5 8 7 9.5 10.5 6"/></svg>
+      No cookies. No tracking scripts. Just honest numbers.
+    </div>
+  </footer>
+
 </div>
 {% endblock %}
