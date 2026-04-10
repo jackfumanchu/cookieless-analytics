@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Jackfumanchu\CookielessAnalyticsBundle;
 
 use Jackfumanchu\CookielessAnalyticsBundle\Controller\CollectController;
+use Jackfumanchu\CookielessAnalyticsBundle\Controller\DashboardController;
 use Jackfumanchu\CookielessAnalyticsBundle\Controller\EventController;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\AnalyticsEventRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\PageViewRepository;
@@ -89,5 +90,20 @@ class CookielessAnalyticsBundle extends AbstractBundle
 
         $services->set(CookielessAnalyticsExtension::class)
             ->arg('$collectUrl', $config['collect_prefix']);
+
+        if ($config['dashboard_enabled']) {
+            $services->set(DashboardController::class)
+                ->arg('$dashboardRole', $config['dashboard_role'])
+                ->arg('$dashboardLayout', $config['dashboard_layout']);
+        }
+    }
+
+    public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
+    {
+        $container->extension('twig', [
+            'paths' => [
+                dirname(__DIR__) . '/templates' => 'CookielessAnalytics',
+            ],
+        ]);
     }
 }

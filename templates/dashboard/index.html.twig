@@ -1,0 +1,47 @@
+{% extends layout %}
+
+{% block body %}
+<div class="ca-dashboard">
+    <header class="ca-dashboard__header">
+        <h1>Analytics</h1>
+        <div data-controller="date-range" data-date-range-from-value="{{ from }}" data-date-range-to-value="{{ to }}">
+            <div class="ca-dashboard__shortcuts">
+                <button type="button" data-date-range-target="shortcut" data-period="today">Aujourd'hui</button>
+                <button type="button" data-date-range-target="shortcut" data-period="7days">7 jours</button>
+                <button type="button" data-date-range-target="shortcut" data-period="30days">30 jours</button>
+                <button type="button" data-date-range-target="shortcut" data-period="month">Ce mois-ci</button>
+            </div>
+            <div class="ca-dashboard__dates">
+                <input type="date" name="from" value="{{ from }}" data-date-range-target="fromInput">
+                <input type="date" name="to" value="{{ to }}" data-date-range-target="toInput">
+                <button type="button" data-action="date-range#apply">Appliquer</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="ca-dashboard__kpi">
+        <turbo-frame id="ca-overview" src="{{ path('cookieless_analytics_dashboard_overview', {from: from, to: to}) }}" loading="lazy">
+            <p>Chargement...</p>
+        </turbo-frame>
+    </section>
+
+    <section class="ca-dashboard__trends">
+        <turbo-frame id="ca-trends" src="{{ path('cookieless_analytics_dashboard_trends', {from: from, to: to}) }}" loading="lazy">
+            <p>Chargement...</p>
+        </turbo-frame>
+    </section>
+
+    <section class="ca-dashboard__tables">
+        <div class="ca-dashboard__table-col">
+            <turbo-frame id="ca-top-pages" src="{{ path('cookieless_analytics_dashboard_top_pages', {from: from, to: to}) }}" loading="lazy">
+                <p>Chargement...</p>
+            </turbo-frame>
+        </div>
+        <div class="ca-dashboard__table-col">
+            <turbo-frame id="ca-events" src="{{ path('cookieless_analytics_dashboard_events', {from: from, to: to}) }}" loading="lazy">
+                <p>Chargement...</p>
+            </turbo-frame>
+        </div>
+    </section>
+</div>
+{% endblock %}
