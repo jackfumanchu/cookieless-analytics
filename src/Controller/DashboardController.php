@@ -127,6 +127,27 @@ class DashboardController
         return new Response($html);
     }
 
+    #[Route(path: '/referrers', name: 'cookieless_analytics_dashboard_referrers', methods: ['GET'])]
+    public function referrers(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted();
+
+        $dateRange = $this->dateRangeResolver->resolve(
+            $request->query->getString('from') ?: null,
+            $request->query->getString('to') ?: null,
+        );
+
+        $referrers = $this->pageViewRepo->findTopReferrers($dateRange->from, $dateRange->to, 10);
+        $totalVisits = array_sum(array_column($referrers, 'visits'));
+
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/_referrers.html.twig', [
+            'referrers' => $referrers,
+            'totalVisits' => $totalVisits,
+        ]);
+
+        return new Response($html);
+    }
+
     #[Route(path: '/events', name: 'cookieless_analytics_dashboard_events', methods: ['GET'])]
     public function events(Request $request): Response
     {

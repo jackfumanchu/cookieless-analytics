@@ -142,6 +142,42 @@ class DashboardControllerTest extends WebTestCase
     }
 
     #[Test]
+    public function referrers_returns_source_list(): void
+    {
+        $client = static::createClient();
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $em->persist(PageView::create(
+            fingerprint: str_repeat('a', 64),
+            pageUrl: '/home',
+            referrer: 'https://google.com/search',
+            viewedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->persist(PageView::create(
+            fingerprint: str_repeat('b', 64),
+            pageUrl: '/about',
+            referrer: 'https://google.com/search',
+            viewedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->persist(PageView::create(
+            fingerprint: str_repeat('c', 64),
+            pageUrl: '/home',
+            referrer: null,
+            viewedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->flush();
+
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/referrers?from=' . $today . '&to=' . $today);
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        self::assertStringContainsString('google.com', $content);
+        self::assertStringContainsString('Direct', $content);
+        self::assertStringContainsString('ca-referrers', $content);
+    }
+
+    #[Test]
     public function overview_returns_kpi_cards(): void
     {
         $client = static::createClient();
