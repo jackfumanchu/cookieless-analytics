@@ -159,6 +159,7 @@ class AnalyticsEventRepositoryTest extends KernelTestCase
         $this->createEvent('click-cta', '2026-04-05', 'hero-button');
         $this->createEvent('click-cta', '2026-04-05', 'hero-button');
         $this->createEvent('click-cta', '2026-04-06', 'footer-button');
+        $this->createEvent('click-cta', '2026-04-06', null);
         $this->createEvent('signup', '2026-04-06', 'organic');
 
         $from = new \DateTimeImmutable('2026-04-05 00:00:00');
