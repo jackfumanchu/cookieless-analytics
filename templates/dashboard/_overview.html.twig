@@ -1,18 +1,17 @@
 <turbo-frame id="ca-overview">
     <div class="ca-kpi-grid">
         {% for card in [
-            {label: 'Pages vues', value: pageViews, prev: prevPageViews},
-            {label: 'Visiteurs uniques', value: uniqueVisitors, prev: prevUniqueVisitors},
-            {label: 'Événements', value: events, prev: prevEvents},
-            {label: 'Pages/visiteur', value: pagesPerVisitor, prev: prevPagesPerVisitor},
+            {label: 'Pages vues', comparison: pageViews},
+            {label: 'Visiteurs uniques', comparison: uniqueVisitors},
+            {label: 'Événements', comparison: events},
+            {label: 'Pages/visiteur', comparison: pagesPerVisitor},
         ] %}
         <div class="ca-kpi-card">
             <span class="ca-kpi-card__label">{{ card.label }}</span>
-            <span class="ca-kpi-card__value">{{ card.value }}</span>
-            {% if card.prev > 0 %}
-                {% set change = ((card.value - card.prev) / card.prev * 100)|round(1) %}
-                <span class="ca-kpi-card__change {{ change >= 0 ? 'ca-kpi-card__change--up' : 'ca-kpi-card__change--down' }}">
-                    {{ change >= 0 ? '↑' : '↓' }} {{ change|abs }}%
+            <span class="ca-kpi-card__value">{{ card.comparison.currentFloat == card.comparison.current ? card.comparison.current : card.comparison.currentFloat }}</span>
+            {% if card.comparison.previous > 0 %}
+                <span class="ca-kpi-card__change {{ card.comparison.changePercent >= 0 ? 'ca-kpi-card__change--up' : 'ca-kpi-card__change--down' }}">
+                    {{ card.comparison.changePercent >= 0 ? '↑' : '↓' }} {{ card.comparison.changePercent|abs }}%
                 </span>
             {% endif %}
         </div>

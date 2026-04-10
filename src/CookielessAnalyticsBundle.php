@@ -12,6 +12,7 @@ use Jackfumanchu\CookielessAnalyticsBundle\Repository\PageViewRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\FingerprintGenerator;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\DateRangeResolver;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\PathExcluder;
+use Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparer;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\UrlSanitizer;
 use Jackfumanchu\CookielessAnalyticsBundle\Twig\CookielessAnalyticsExtension;
 use Symfony\Component\Config\Definition\Configurator\DefinitionConfigurator;
@@ -83,6 +84,8 @@ class CookielessAnalyticsBundle extends AbstractBundle
             ->arg('$patterns', $config['exclude_paths']);
 
         $services->set(DateRangeResolver::class);
+
+        $services->set(PeriodComparer::class);
 
         $services->set(CollectController::class);
 

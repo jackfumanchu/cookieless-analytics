@@ -7,6 +7,8 @@ namespace Jackfumanchu\CookielessAnalyticsBundle\Controller;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\AnalyticsEventRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\PageViewRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\DateRangeResolver;
+use Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison;
+use Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,6 +23,7 @@ class DashboardController
         private readonly DateRangeResolver $dateRangeResolver,
         private readonly PageViewRepository $pageViewRepo,
         private readonly AnalyticsEventRepository $eventRepo,
+        private readonly PeriodComparer $periodComparer,
         private readonly ?AuthorizationCheckerInterface $authorizationChecker,
         private readonly string $dashboardRole,
         private readonly ?string $dashboardLayout,
@@ -58,26 +61,23 @@ class DashboardController
             $request->query->getString('to') ?: null,
         );
 
-        $pageViews = $this->pageViewRepo->countByPeriod($dateRange->from, $dateRange->to);
-        $uniqueVisitors = $this->pageViewRepo->countUniqueVisitorsByPeriod($dateRange->from, $dateRange->to);
-        $events = $this->eventRepo->countByPeriod($dateRange->from, $dateRange->to);
-        $pagesPerVisitor = $uniqueVisitors > 0 ? round($pageViews / $uniqueVisitors, 1) : 0;
+        $pageViews = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countByPeriod(...));
+        $uniqueVisitors = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countUniqueVisitorsByPeriod(...));
+        $events = $this->periodComparer->compare($dateRange, $this->eventRepo->countByPeriod(...));
 
-        // Comparison period
-        $prevPageViews = $this->pageViewRepo->countByPeriod($dateRange->comparisonFrom, $dateRange->comparisonTo);
-        $prevUniqueVisitors = $this->pageViewRepo->countUniqueVisitorsByPeriod($dateRange->comparisonFrom, $dateRange->comparisonTo);
-        $prevEvents = $this->eventRepo->countByPeriod($dateRange->comparisonFrom, $dateRange->comparisonTo);
-        $prevPagesPerVisitor = $prevUniqueVisitors > 0 ? round($prevPageViews / $prevUniqueVisitors, 1) : 0;
+        $pagesPerVisitor = $uniqueVisitors->current > 0
+            ? round($pageViews->current / $uniqueVisitors->current, 1)
+            : 0.0;
+        $prevPagesPerVisitor = $uniqueVisitors->previous > 0
+            ? round($pageViews->previous / $uniqueVisitors->previous, 1)
+            : 0.0;
+        $pagesPerVisitorComparison = PeriodComparison::fromFloat($pagesPerVisitor, $prevPagesPerVisitor);
 
         $html = $this->twig->render('@CookielessAnalytics/dashboard/_overview.html.twig', [
             'pageViews' => $pageViews,
             'uniqueVisitors' => $uniqueVisitors,
             'events' => $events,
-            'pagesPerVisitor' => $pagesPerVisitor,
-            'prevPageViews' => $prevPageViews,
-            'prevUniqueVisitors' => $prevUniqueVisitors,
-            'prevEvents' => $prevEvents,
-            'prevPagesPerVisitor' => $prevPagesPerVisitor,
+            'pagesPerVisitor' => $pagesPerVisitorComparison,
         ]);
 
         return new Response($html);
