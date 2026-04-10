@@ -6,6 +6,7 @@ namespace Jackfumanchu\CookielessAnalyticsBundle;
 
 use Jackfumanchu\CookielessAnalyticsBundle\Controller\CollectController;
 use Jackfumanchu\CookielessAnalyticsBundle\Controller\EventController;
+use Jackfumanchu\CookielessAnalyticsBundle\Repository\AnalyticsEventRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\PageViewRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\FingerprintGenerator;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\PathExcluder;
@@ -50,6 +51,8 @@ class CookielessAnalyticsBundle extends AbstractBundle
             ->autoconfigure();
 
         $services->set(PageViewRepository::class);
+
+        $services->set(AnalyticsEventRepository::class);
 
         $services->set(FingerprintGenerator::class);
 

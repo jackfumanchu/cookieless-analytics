@@ -7,7 +7,7 @@ namespace Jackfumanchu\CookielessAnalyticsBundle\Entity;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: \Jackfumanchu\CookielessAnalyticsBundle\Repository\AnalyticsEventRepository::class)]
 #[ORM\Table(name: 'ca_analytics_event')]
 #[ORM\Index(columns: ['fingerprint'], name: 'idx_event_fingerprint')]
 #[ORM\Index(columns: ['recorded_at'], name: 'idx_event_recorded_at')]
