@@ -15,7 +15,16 @@ $em->createQuery('DELETE FROM ' . \Jackfumanchu\CookielessAnalyticsBundle\Entity
 $em->createQuery('DELETE FROM ' . \Jackfumanchu\CookielessAnalyticsBundle\Entity\AnalyticsEvent::class)->execute();
 
 $fingerprints = array_map(fn (int $i) => hash('sha256', "visitor-{$i}"), range(1, 30));
-$pages = ['/', '/docs/getting-started', '/pricing', '/blog/cookieless-future', '/docs/api-reference', '/about', '/changelog', '/blog/privacy-first-analytics'];
+$pages = [
+    '/', '/pricing', '/about', '/changelog', '/contact', '/terms', '/privacy',
+    '/docs/getting-started', '/docs/api-reference', '/docs/installation', '/docs/configuration',
+    '/docs/events', '/docs/fingerprinting', '/docs/self-hosting', '/docs/troubleshooting',
+    '/blog/cookieless-future', '/blog/privacy-first-analytics', '/blog/gdpr-compliance',
+    '/blog/server-side-tracking', '/blog/why-no-cookies', '/blog/analytics-without-consent',
+    '/blog/lighthouse-performance', '/blog/symfony-bundle-release', '/blog/open-source-launch',
+    '/features', '/features/dashboards', '/features/events', '/features/referrers',
+    '/integrations', '/integrations/wordpress', '/integrations/laravel', '/integrations/symfony',
+];
 $referrers = ['https://google.com/search?q=analytics', 'https://twitter.com/post/123', 'https://news.ycombinator.com/item?id=1', 'https://reddit.com/r/php', 'https://dev.to/article', 'https://github.com/jackfumanchu', null, null];
 $eventNames = ['cta_click', 'signup_start', 'signup_complete', 'docs_search', 'pricing_toggle', 'error_404', 'scroll_depth_75', 'download_sdk'];
 $eventValues = ['hero-button', 'footer-button', 'sidebar-cta', 'pricing_monthly', 'pricing_annual', null];
