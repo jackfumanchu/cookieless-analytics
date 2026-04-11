@@ -364,7 +364,7 @@
 }
 
 .chart-box {
-  height: 200px;
+  overflow: hidden;
 }
 
 .chart-box svg { width: 100%; height: 100%; }
@@ -873,8 +873,8 @@
 }
 
 .detail-chart {
-  height: 120px;
   margin-bottom: 24px;
+  overflow: hidden;
 }
 
 .detail-ref-list {
@@ -1154,7 +1154,6 @@
 /* ─── Trends Sub-Page ─── */
 
 .hero-chart {
-  border: 2px solid var(--ink);
   padding: 28px 28px 16px;
   margin-bottom: 28px;
 }

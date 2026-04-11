@@ -173,18 +173,34 @@
             const url = new URL(window.location);
             url.searchParams.set("from", from);
             url.searchParams.set("to", to);
-            window.history.replaceState({}, "", url);
-            document.querySelectorAll('turbo-frame[id^="ca-"]').forEach(frame => {
-                const src = new URL(frame.src || frame.getAttribute("src"), window.location.origin);
-                src.searchParams.set("from", from);
-                src.searchParams.set("to", to);
-                frame.src = src.toString();
+
+            // Update nav links
+            document.querySelectorAll('.section-nav a').forEach(link => {
+                const href = new URL(link.href, window.location.origin);
+                href.searchParams.set("from", from);
+                href.searchParams.set("to", to);
+                link.href = href.toString();
             });
-            this.fromValue = from;
-            this.toValue = to;
-            this.highlightActiveShortcut();
-            if (this.hasMastheadRuleTarget) {
-                this.mastheadRuleTarget.textContent = from + " — " + to;
+
+            // If there are turbo frames (overview page), update them in place
+            const frames = document.querySelectorAll('turbo-frame[id^="ca-"]');
+            if (frames.length > 0) {
+                window.history.replaceState({}, "", url);
+                frames.forEach(frame => {
+                    const src = new URL(frame.src || frame.getAttribute("src"), window.location.origin);
+                    src.searchParams.set("from", from);
+                    src.searchParams.set("to", to);
+                    frame.src = src.toString();
+                });
+                this.fromValue = from;
+                this.toValue = to;
+                this.highlightActiveShortcut();
+                if (this.hasMastheadRuleTarget) {
+                    this.mastheadRuleTarget.textContent = from + " — " + to;
+                }
+            } else {
+                // Sub-pages: full page navigation with new dates
+                Turbo.visit(url.toString());
             }
         }
 
@@ -205,10 +221,24 @@
     app.register("chart", class extends Controller {
         static values = { dates: Array, views: Array, visitors: Array };
 
-        connect() { this.renderChart(); }
-        disconnect() { if (this.chart) this.chart.destroy(); }
+        connect() {
+            this._resizeObserver = new ResizeObserver(() => {
+                if (this.chart) {
+                    this.chart.setSize({ width: this.element.clientWidth, height: this.chart.height });
+                }
+            });
+            this._resizeObserver.observe(this.element);
+            this.renderChart();
+        }
+
+        disconnect() {
+            if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
+            if (this.chart) { this.chart.destroy(); this.chart = null; }
+            this.element.innerHTML = '';
+        }
 
         renderChart() {
+            this.element.innerHTML = '';
             if (!this.datesValue.length) {
                 this.element.innerHTML = '<div class="ca-empty" style="display:flex;align-items:center;justify-content:center;height:200px;">No data for this period</div>';
                 return;
@@ -218,8 +248,9 @@
             const inkMuted = getComputedStyle(document.documentElement).getPropertyValue('--ink-muted').trim();
             const paper = getComputedStyle(document.documentElement).getPropertyValue('--paper').trim();
             const rule = getComputedStyle(document.documentElement).getPropertyValue('--rule').trim();
+            const w = this.element.clientWidth || 400;
             const opts = {
-                width: this.element.clientWidth,
+                width: w,
                 height: 200,
                 series: [
                     { label: "Date" },
