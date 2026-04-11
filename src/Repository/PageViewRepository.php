@@ -73,7 +73,7 @@ class PageViewRepository extends ServiceEntityRepository
     /**
      * @return list<array{pageUrl: string, views: int, uniqueVisitors: int}>
      */
-    public function findTopPages(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit = 10, ?string $search = null): array
+    public function findTopPages(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit = 20, ?string $search = null, int $offset = 0): array
     {
         $qb = $this->createQueryBuilder('p')
             ->select('p.pageUrl, COUNT(p.id) AS views, COUNT(DISTINCT p.fingerprint) AS uniqueVisitors')
@@ -89,9 +89,27 @@ class PageViewRepository extends ServiceEntityRepository
 
         return $qb->groupBy('p.pageUrl')
             ->orderBy('views', 'DESC')
+            ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    public function countDistinctPages(\DateTimeImmutable $from, \DateTimeImmutable $to, ?string $search = null): int
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->select('COUNT(DISTINCT p.pageUrl)')
+            ->where('p.viewedAt >= :from')
+            ->andWhere('p.viewedAt <= :to')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to);
+
+        if ($search !== null && $search !== '') {
+            $qb->andWhere('p.pageUrl LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
     /**

@@ -270,6 +270,61 @@ class PageViewRepositoryTest extends KernelTestCase
     }
 
     #[Test]
+    public function find_top_pages_with_offset_skips_results(): void
+    {
+        $fp = str_repeat('a', 64);
+        $fp2 = str_repeat('b', 64);
+
+        // /home: 3 views, /about: 2 views, /contact: 1 view
+        $this->createPageView('/home', $fp, '2026-04-05');
+        $this->createPageView('/home', $fp2, '2026-04-05');
+        $this->createPageView('/home', $fp, '2026-04-06');
+        $this->createPageView('/about', $fp, '2026-04-05');
+        $this->createPageView('/about', $fp2, '2026-04-06');
+        $this->createPageView('/contact', $fp, '2026-04-05');
+
+        $from = new \DateTimeImmutable('2026-04-05 00:00:00');
+        $to = new \DateTimeImmutable('2026-04-07 23:59:59');
+
+        $result = $this->repository->findTopPages($from, $to, 2, null, 1);
+
+        self::assertCount(2, $result);
+        self::assertSame('/about', $result[0]['pageUrl']);
+        self::assertSame('/contact', $result[1]['pageUrl']);
+    }
+
+    #[Test]
+    public function count_distinct_pages_returns_total(): void
+    {
+        $fp = str_repeat('a', 64);
+
+        $this->createPageView('/home', $fp, '2026-04-05');
+        $this->createPageView('/home', $fp, '2026-04-06');
+        $this->createPageView('/about', $fp, '2026-04-05');
+        $this->createPageView('/contact', $fp, '2026-04-06');
+
+        $from = new \DateTimeImmutable('2026-04-05 00:00:00');
+        $to = new \DateTimeImmutable('2026-04-07 23:59:59');
+
+        self::assertSame(3, $this->repository->countDistinctPages($from, $to));
+    }
+
+    #[Test]
+    public function count_distinct_pages_with_search_filters(): void
+    {
+        $fp = str_repeat('a', 64);
+
+        $this->createPageView('/en/blog/hello', $fp, '2026-04-05');
+        $this->createPageView('/en/blog/world', $fp, '2026-04-05');
+        $this->createPageView('/en/about', $fp, '2026-04-05');
+
+        $from = new \DateTimeImmutable('2026-04-05 00:00:00');
+        $to = new \DateTimeImmutable('2026-04-07 23:59:59');
+
+        self::assertSame(2, $this->repository->countDistinctPages($from, $to, 'blog'));
+    }
+
+    #[Test]
     public function count_unique_visitors_by_period_for_page_filters_by_url(): void
     {
         $fp = str_repeat('a', 64);
