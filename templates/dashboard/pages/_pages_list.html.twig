@@ -13,7 +13,7 @@
     <tbody>
       {% for page in pages %}
       <tr>
-        <td class="rank-col">{{ '%02d'|format(loop.index) }}</td>
+        <td class="rank-col">{{ '%02d'|format(offset + loop.index) }}</td>
         <td class="url-col">{{ page.pageUrl }}</td>
         <td class="num-col">{{ page.views|number_format(0, '.', ',') }}</td>
         <td class="num-col">{{ page.uniqueVisitors|number_format(0, '.', ',') }}</td>
@@ -24,5 +24,6 @@
   {% else %}
   <div class="ca-empty">No pages match your search</div>
   {% endif %}
+  {% include '@CookielessAnalytics/dashboard/pages/_pagination.html.twig' %}
 </div>
 </turbo-frame>

@@ -42,7 +42,7 @@
         <tbody>
           {% for page in pages %}
           <tr{% if selectedDetail and selectedDetail.pageUrl == page.pageUrl %} class="selected"{% endif %}>
-            <td class="rank-col">{{ '%02d'|format(loop.index) }}</td>
+            <td class="rank-col">{{ '%02d'|format(offset + loop.index) }}</td>
             <td class="url-col">{{ page.pageUrl }}</td>
             <td class="num-col">{{ page.views|number_format(0, '.', ',') }}</td>
             <td class="num-col">{{ page.uniqueVisitors|number_format(0, '.', ',') }}</td>
@@ -53,6 +53,7 @@
       {% else %}
       <div class="ca-empty">{% if search %}No pages match your search{% else %}No page data for this period{% endif %}</div>
       {% endif %}
+      {% include '@CookielessAnalytics/dashboard/pages/_pagination.html.twig' %}
     </div>
     </turbo-frame>
 

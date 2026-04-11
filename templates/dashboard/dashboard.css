@@ -941,6 +941,51 @@
   .list-pane { padding-right: 0; }
 }
 
+/* ─── Pagination ─── */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 16px;
+  padding: 8px 0;
+}
+
+.pagination-link {
+  font-family: var(--data);
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--rule);
+  text-decoration: none;
+  color: var(--ink);
+  transition: background 0.12s ease;
+}
+
+.pagination-link:hover:not(.pagination-disabled):not(.pagination-current) {
+  background: var(--paper-dark);
+}
+
+.pagination-current {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-weight: 600;
+}
+
+.pagination-disabled {
+  color: var(--ink-faint);
+  border-color: var(--rule);
+  cursor: default;
+}
+
+.pagination-ellipsis {
+  font-family: var(--data);
+  font-size: 12px;
+  color: var(--ink-muted);
+  padding: 0 4px;
+}
+
 /* ─── Events Sub-Page ─── */
 
 .summary-strip {

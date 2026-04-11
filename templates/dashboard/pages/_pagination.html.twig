@@ -1,0 +1,47 @@
+{# Pagination controls — included inside the Turbo Frame #}
+{% if totalPagesCount > 1 %}
+<nav class="pagination">
+  {# Previous #}
+  {% if currentPage > 1 %}
+    <a href="{{ path('cookieless_analytics_dashboard_pages_view', {from: from, to: to, search: search, page: currentPage - 1}) }}" class="pagination-link pagination-prev">&laquo; Prev</a>
+  {% else %}
+    <span class="pagination-link pagination-prev pagination-disabled">&laquo; Prev</span>
+  {% endif %}
+
+  {# Page numbers with window #}
+  {% set windowSize = 2 %}
+  {% set showFirst = currentPage > windowSize + 1 %}
+  {% set showLastPage = currentPage < totalPagesCount - windowSize %}
+  {% set rangeStart = max(1, currentPage - windowSize) %}
+  {% set rangeEnd = min(totalPagesCount, currentPage + windowSize) %}
+
+  {% if showFirst %}
+    <a href="{{ path('cookieless_analytics_dashboard_pages_view', {from: from, to: to, search: search, page: 1}) }}" class="pagination-link">1</a>
+    {% if rangeStart > 2 %}
+      <span class="pagination-ellipsis">&hellip;</span>
+    {% endif %}
+  {% endif %}
+
+  {% for p in rangeStart..rangeEnd %}
+    {% if p == currentPage %}
+      <span class="pagination-link pagination-current">{{ p }}</span>
+    {% else %}
+      <a href="{{ path('cookieless_analytics_dashboard_pages_view', {from: from, to: to, search: search, page: p}) }}" class="pagination-link">{{ p }}</a>
+    {% endif %}
+  {% endfor %}
+
+  {% if showLastPage %}
+    {% if rangeEnd < totalPagesCount - 1 %}
+      <span class="pagination-ellipsis">&hellip;</span>
+    {% endif %}
+    <a href="{{ path('cookieless_analytics_dashboard_pages_view', {from: from, to: to, search: search, page: totalPagesCount}) }}" class="pagination-link">{{ totalPagesCount }}</a>
+  {% endif %}
+
+  {# Next #}
+  {% if currentPage < totalPagesCount %}
+    <a href="{{ path('cookieless_analytics_dashboard_pages_view', {from: from, to: to, search: search, page: currentPage + 1}) }}" class="pagination-link pagination-next">Next &raquo;</a>
+  {% else %}
+    <span class="pagination-link pagination-next pagination-disabled">Next &raquo;</span>
+  {% endif %}
+</nav>
+{% endif %}
