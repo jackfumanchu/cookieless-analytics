@@ -83,7 +83,7 @@ git commit -m "fix(auth): handle null response (Fixes #123)"
 Same convention as commits:
 
 ```
-fix(auth): fix login crash on empty response
+fix(auth): handle login crash on empty response
 ```
 
 ### Description template
@@ -110,12 +110,16 @@ Fixes #123
 
 ---
 
-## 6. Merge Strategy: Squash & Merge
+## 6. Merge Strategy: Rebase & Merge
 
-- Clean Git history: 1 PR = 1 logical commit
-- Easy rollback
-- Final commit example:
+- Preserves granular commit history (TDD progression, focused changes)
+- Each commit remains individually visible — better for `git bisect` and code archaeology
+- Commits should already be clean and focused before opening the PR (no "WIP" or "fix typo" commits)
+- `Fixes #N` goes in the **PR description**, not individual commits — GitHub auto-closes issues from the PR body on merge
 
 ```
-fix(auth): fix login crash (#123)
+feat(repo): add search filter to findTopPages (#2)
+feat(controller): read search param and skip detail pane (#2)
+feat(template): add Turbo Frame and search data attributes (#2)
+feat(stimulus): add search controller with debounce (#2)
 ```
