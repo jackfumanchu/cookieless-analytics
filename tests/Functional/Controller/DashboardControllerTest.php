@@ -316,6 +316,41 @@ class DashboardControllerTest extends WebTestCase
     }
 
     #[Test]
+    public function trends_view_returns_200_with_charts(): void
+    {
+        $client = static::createClient();
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        for ($i = 0; $i < 3; $i++) {
+            $date = (new \DateTimeImmutable('today'))->modify("-{$i} days");
+            $em->persist(PageView::create(
+                fingerprint: str_repeat('a', 64),
+                pageUrl: '/home',
+                referrer: null,
+                viewedAt: $date,
+            ));
+        }
+        $em->persist(AnalyticsEvent::create(
+            fingerprint: str_repeat('a', 64),
+            name: 'click-cta',
+            value: null,
+            pageUrl: '/home',
+            recordedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->flush();
+
+        $from = (new \DateTimeImmutable('today'))->modify('-6 days')->format('Y-m-d');
+        $to = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/trends?from=' . $from . '&to=' . $to);
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        self::assertStringContainsString('hero-chart', $content);
+        self::assertStringContainsString('numbers-strip', $content);
+        self::assertStringContainsString('data-chart-dates-value', $content);
+    }
+
+    #[Test]
     public function index_does_not_redirect_with_valid_dates(): void
     {
         $client = static::createClient();

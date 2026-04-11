@@ -1,0 +1,137 @@
+{% extends layout %}
+
+{% block content %}
+  {# ─── Hero Chart ─── #}
+  <div class="hero-chart">
+    <div class="hero-chart-header">
+      <div>
+        <div class="hero-chart-title">Daily Traffic</div>
+        <div class="hero-chart-deck">Page views, unique visitors, and previous period comparison</div>
+      </div>
+      <div class="chart-legend">
+        <span><span class="leg-line" style="background:var(--ink);"></span> Page views</span>
+        <span><span class="leg-line dashed"></span> Visitors</span>
+        <span><span class="leg-line dotted"></span> Prev. period</span>
+      </div>
+    </div>
+    <div class="hero-chart-area"
+         data-controller="chart"
+         data-chart-dates-value="{{ dates }}"
+         data-chart-views-value="{{ views }}"
+         data-chart-visitors-value="{{ visitors }}">
+    </div>
+  </div>
+
+  {# ─── By The Numbers ─── #}
+  <div class="numbers-strip">
+    <div class="numbers-item">
+      <div class="ni-label">Peak Day</div>
+      {% if peakDay %}
+        <div class="ni-value">{{ peakDay.date|date('D j') }}</div>
+        <div class="ni-context">{{ peakDay.views|number_format(0, '.', ',') }} views</div>
+      {% else %}
+        <div class="ni-value">&mdash;</div>
+      {% endif %}
+    </div>
+    <div class="numbers-item">
+      <div class="ni-label">Low Day</div>
+      {% if lowDay %}
+        <div class="ni-value">{{ lowDay.date|date('D j') }}</div>
+        <div class="ni-context">{{ lowDay.views|number_format(0, '.', ',') }} views</div>
+      {% else %}
+        <div class="ni-value">&mdash;</div>
+      {% endif %}
+    </div>
+    <div class="numbers-item">
+      <div class="ni-label">Daily Avg.</div>
+      <div class="ni-value">{{ dailyAvgViews|number_format(0, '.', ',') }}</div>
+      <div class="ni-context">views / day</div>
+    </div>
+    <div class="numbers-item">
+      <div class="ni-label">Avg. Visitors</div>
+      <div class="ni-value">{{ dailyAvgVisitors|number_format(0, '.', ',') }}</div>
+      <div class="ni-context">visitors / day</div>
+    </div>
+    <div class="numbers-item">
+      <div class="ni-label">Wkday Avg.</div>
+      <div class="ni-value">{{ weekdayAvg|number_format(0, '.', ',') }}</div>
+      <div class="ni-context">Mon&ndash;Fri</div>
+    </div>
+    <div class="numbers-item">
+      <div class="ni-label">Weekend Avg.</div>
+      <div class="ni-value">{{ weekendAvg|number_format(0, '.', ',') }}</div>
+      {% if weekdayAvg > 0 and weekendAvg > 0 %}
+        {% set wkDiff = ((weekendAvg - weekdayAvg) / weekdayAvg * 100)|round %}
+        <div class="ni-context">{{ wkDiff > 0 ? '+' : '' }}{{ wkDiff }}% vs wkday</div>
+      {% else %}
+        <div class="ni-context">Sat&ndash;Sun</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ─── Small Multiples ─── #}
+  <div>
+    <div class="multiples-header">
+      Metric Breakdown
+      <span class="multiples-deck">&mdash; Individual trends for each tracked metric</span>
+    </div>
+    <div class="multiples-grid">
+      <div class="multiple-card">
+        <div class="mc-header">
+          <span class="mc-title">Page Views</span>
+          <span class="mc-value">{{ pageViewsComparison.current|number_format(0, '.', ',') }}</span>
+        </div>
+        <span class="mc-change {{ pageViewsComparison.changePercent > 0 ? 'up' : (pageViewsComparison.changePercent < 0 ? 'down' : '') }}">
+          {% if pageViewsComparison.changePercent > 0 %}&#9650; {{ pageViewsComparison.changePercent }}%{% elseif pageViewsComparison.changePercent < 0 %}&#9660; {{ pageViewsComparison.changePercent|abs }}%{% else %}&mdash;{% endif %}
+        </span>
+        <div class="mc-chart"></div>
+      </div>
+      <div class="multiple-card">
+        <div class="mc-header">
+          <span class="mc-title">Unique Visitors</span>
+          <span class="mc-value">{{ visitorsComparison.current|number_format(0, '.', ',') }}</span>
+        </div>
+        <span class="mc-change {{ visitorsComparison.changePercent > 0 ? 'up' : (visitorsComparison.changePercent < 0 ? 'down' : '') }}">
+          {% if visitorsComparison.changePercent > 0 %}&#9650; {{ visitorsComparison.changePercent }}%{% elseif visitorsComparison.changePercent < 0 %}&#9660; {{ visitorsComparison.changePercent|abs }}%{% else %}&mdash;{% endif %}
+        </span>
+        <div class="mc-chart"></div>
+      </div>
+      <div class="multiple-card">
+        <div class="mc-header">
+          <span class="mc-title">Events</span>
+          <span class="mc-value">{{ eventsComparison.current|number_format(0, '.', ',') }}</span>
+        </div>
+        <span class="mc-change {{ eventsComparison.changePercent > 0 ? 'up' : (eventsComparison.changePercent < 0 ? 'down' : '') }}">
+          {% if eventsComparison.changePercent > 0 %}&#9650; {{ eventsComparison.changePercent }}%{% elseif eventsComparison.changePercent < 0 %}&#9660; {{ eventsComparison.changePercent|abs }}%{% else %}&mdash;{% endif %}
+        </span>
+        <div class="mc-chart"></div>
+      </div>
+      <div class="multiple-card">
+        <div class="mc-header">
+          <span class="mc-title">Pages / Visitor</span>
+          <span class="mc-value">{{ pagesPerVisitorComparison.currentFloat }}</span>
+        </div>
+        <span class="mc-change {{ pagesPerVisitorComparison.changePercent > 0 ? 'up' : (pagesPerVisitorComparison.changePercent < 0 ? 'down' : '') }}">
+          {% if pagesPerVisitorComparison.changePercent > 0 %}&#9650; {{ pagesPerVisitorComparison.changePercent }}%{% elseif pagesPerVisitorComparison.changePercent < 0 %}&#9660; {{ pagesPerVisitorComparison.changePercent|abs }}%{% else %}&mdash;{% endif %}
+        </span>
+        <div class="mc-chart"></div>
+      </div>
+      <div class="multiple-card">
+        <div class="mc-header">
+          <span class="mc-title">Bounce Rate</span>
+          <span class="mc-value">&mdash;</span>
+        </div>
+        <span class="mc-change">&mdash;</span>
+        <div class="mc-chart"></div>
+      </div>
+      <div class="multiple-card">
+        <div class="mc-header">
+          <span class="mc-title">Avg. Duration</span>
+          <span class="mc-value">&mdash;</span>
+        </div>
+        <span class="mc-change">&mdash;</span>
+        <div class="mc-chart"></div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

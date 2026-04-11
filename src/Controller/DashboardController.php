@@ -179,7 +179,84 @@ class DashboardController
     #[Route(path: '/trends', name: 'cookieless_analytics_dashboard_trends_view', methods: ['GET'])]
     public function trendsView(Request $request): Response
     {
-        return new Response('Trends page — coming soon');
+        $this->denyAccessUnlessGranted();
+
+        $from = $request->query->get('from');
+        $to = $request->query->get('to');
+        $dateRange = $this->dateRangeResolver->resolve(
+            is_string($from) ? $from : null,
+            is_string($to) ? $to : null,
+        );
+
+        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
+            return $redirect;
+        }
+
+        $daily = $this->pageViewRepo->countByDay($dateRange->from, $dateRange->to);
+        $dates = array_map(fn (array $row) => $row['date'], $daily);
+        $views = array_map(fn (array $row) => (int) $row['count'], $daily);
+        $visitors = array_map(fn (array $row) => (int) $row['unique'], $daily);
+
+        $prevDaily = $this->pageViewRepo->countByDay($dateRange->comparisonFrom, $dateRange->comparisonTo);
+        $prevViews = array_map(fn (array $row) => (int) $row['count'], $prevDaily);
+
+        $totalViews = array_sum($views);
+        $totalVisitors = array_sum($visitors);
+        $numDays = count($views);
+        $dailyAvgViews = $numDays > 0 ? (int) round($totalViews / $numDays) : 0;
+        $dailyAvgVisitors = $numDays > 0 ? (int) round($totalVisitors / $numDays) : 0;
+
+        $peakDay = null;
+        $lowDay = null;
+        if ($numDays > 0) {
+            $maxIdx = array_search(max($views), $views, true);
+            $minIdx = array_search(min($views), $views, true);
+            $peakDay = ['date' => $dates[$maxIdx], 'views' => $views[$maxIdx]];
+            $lowDay = ['date' => $dates[$minIdx], 'views' => $views[$minIdx]];
+        }
+
+        $weekdayViews = [];
+        $weekendViews = [];
+        foreach ($daily as $row) {
+            $dow = (int) (new \DateTimeImmutable($row['date']))->format('N');
+            if ($dow <= 5) {
+                $weekdayViews[] = (int) $row['count'];
+            } else {
+                $weekendViews[] = (int) $row['count'];
+            }
+        }
+        $weekdayAvg = count($weekdayViews) > 0 ? (int) round(array_sum($weekdayViews) / count($weekdayViews)) : 0;
+        $weekendAvg = count($weekendViews) > 0 ? (int) round(array_sum($weekendViews) / count($weekendViews)) : 0;
+
+        $pageViewsComparison = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countByPeriod(...));
+        $visitorsComparison = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countUniqueVisitorsByPeriod(...));
+        $eventsComparison = $this->periodComparer->compare($dateRange, $this->eventRepo->countByPeriod(...));
+        $pagesPerVisitor = $visitorsComparison->current > 0 ? round($pageViewsComparison->current / $visitorsComparison->current, 1) : 0.0;
+        $prevPagesPerVisitor = $visitorsComparison->previous > 0 ? round($pageViewsComparison->previous / $visitorsComparison->previous, 1) : 0.0;
+        $pagesPerVisitorComparison = PeriodComparison::fromFloat($pagesPerVisitor, $prevPagesPerVisitor);
+
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/trends.html.twig', [
+            'from' => $dateRange->from->format('Y-m-d'),
+            'to' => $dateRange->to->format('Y-m-d'),
+            'layout' => $this->dashboardLayout ?? '@CookielessAnalytics/dashboard/layout.html.twig',
+            'active_nav' => 'trends',
+            'dates' => json_encode($dates),
+            'views' => json_encode($views),
+            'visitors' => json_encode($visitors),
+            'prevViews' => json_encode($prevViews),
+            'peakDay' => $peakDay,
+            'lowDay' => $lowDay,
+            'dailyAvgViews' => $dailyAvgViews,
+            'dailyAvgVisitors' => $dailyAvgVisitors,
+            'weekdayAvg' => $weekdayAvg,
+            'weekendAvg' => $weekendAvg,
+            'pageViewsComparison' => $pageViewsComparison,
+            'visitorsComparison' => $visitorsComparison,
+            'eventsComparison' => $eventsComparison,
+            'pagesPerVisitorComparison' => $pagesPerVisitorComparison,
+        ]);
+
+        return new Response($html);
     }
 
     #[Route(path: '/frame/overview', name: 'cookieless_analytics_dashboard_overview', methods: ['GET'])]
