@@ -115,6 +115,43 @@ class DashboardController
             return new Response($html);
         }
 
+        // Turbo Frame request — return only the detail pane
+        if ($request->headers->get('Turbo-Frame') === 'ca-page-detail') {
+            $selected = $request->query->get('selected');
+            $selectedDetail = null;
+
+            if (is_string($selected) && $selected !== '') {
+                $viewCount = $this->pageViewRepo->countByPeriodForPage($selected, $dateRange->from, $dateRange->to);
+
+                if ($viewCount > 0) {
+                    $selectedViews = $this->periodComparer->compare(
+                        $dateRange,
+                        fn (\DateTimeImmutable $f, \DateTimeImmutable $t) => $this->pageViewRepo->countByPeriodForPage($selected, $f, $t),
+                    );
+                    $selectedVisitors = $this->periodComparer->compare(
+                        $dateRange,
+                        fn (\DateTimeImmutable $f, \DateTimeImmutable $t) => $this->pageViewRepo->countUniqueVisitorsByPeriodForPage($selected, $f, $t),
+                    );
+                    $selectedDaily = $this->pageViewRepo->countByDayForPage($selected, $dateRange->from, $dateRange->to);
+                    $selectedReferrers = $this->pageViewRepo->findTopReferrersForPage($selected, $dateRange->from, $dateRange->to, 5);
+
+                    $selectedDetail = [
+                        'pageUrl' => $selected,
+                        'views' => $selectedViews,
+                        'visitors' => $selectedVisitors,
+                        'daily' => $selectedDaily,
+                        'referrers' => $selectedReferrers,
+                    ];
+                }
+            }
+
+            $html = $this->twig->render('@CookielessAnalytics/dashboard/pages/_page_detail.html.twig', [
+                'selectedDetail' => $selectedDetail,
+            ]);
+
+            return new Response($html);
+        }
+
         // Pre-select the first page for the detail pane (only when not searching)
         $selectedPage = $searchTerm === null ? ($pages[0]['pageUrl'] ?? null) : null;
         $selectedDetail = null;

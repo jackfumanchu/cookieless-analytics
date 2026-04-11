@@ -577,6 +577,58 @@ class DashboardControllerTest extends WebTestCase
     }
 
     #[Test]
+    public function pages_view_turbo_frame_detail_returns_selected_page(): void
+    {
+        $client = static::createClient();
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $em->persist(PageView::create(
+            fingerprint: str_repeat('a', 64),
+            pageUrl: '/home',
+            referrer: 'https://google.com/search',
+            viewedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->persist(PageView::create(
+            fingerprint: str_repeat('b', 64),
+            pageUrl: '/home',
+            referrer: null,
+            viewedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->flush();
+
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/pages?from=' . $today . '&to=' . $today . '&selected=%2Fhome', [], [], [
+            'HTTP_TURBO_FRAME' => 'ca-page-detail',
+        ]);
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        self::assertStringContainsString('turbo-frame', $content);
+        self::assertStringContainsString('id="ca-page-detail"', $content);
+        self::assertStringContainsString('/home', $content);
+        self::assertStringContainsString('dk-value', $content);
+        self::assertStringNotContainsString('pages-table', $content);
+        self::assertStringNotContainsString('<!DOCTYPE', $content);
+    }
+
+    #[Test]
+    public function pages_view_turbo_frame_detail_with_unknown_page_shows_empty(): void
+    {
+        $client = static::createClient();
+
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/pages?from=' . $today . '&to=' . $today . '&selected=%2Fnonexistent', [], [], [
+            'HTTP_TURBO_FRAME' => 'ca-page-detail',
+        ]);
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        self::assertStringContainsString('ca-page-detail', $content);
+        self::assertStringContainsString('No page selected', $content);
+        self::assertStringNotContainsString('dk-value', $content);
+    }
+
+    #[Test]
     public function pages_view_search_with_pagination(): void
     {
         $client = static::createClient();
