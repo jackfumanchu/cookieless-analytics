@@ -476,6 +476,8 @@ class DashboardControllerTest extends WebTestCase
         // Page 2 should have 5 results (25 total, 20 per page)
         // Use '<tr' to match both '<tr>' and '<tr class="selected">'
         self::assertSame(5, substr_count($content, '<tr') - 1);
+        // Header should show total distinct pages, not current page count
+        self::assertStringContainsString('25 pages tracked', $content);
     }
 
     #[Test]
@@ -498,6 +500,80 @@ class DashboardControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(200);
         $content = $client->getResponse()->getContent();
         self::assertStringContainsString('/home', $content);
+    }
+
+    #[Test]
+    public function events_view_with_single_event_shows_detail(): void
+    {
+        $client = static::createClient();
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        $em->persist(AnalyticsEvent::create(
+            fingerprint: str_repeat('a', 64),
+            name: 'cta_click',
+            value: 'hero-button',
+            pageUrl: '/home',
+            recordedAt: new \DateTimeImmutable('today'),
+        ));
+        $em->flush();
+
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/events?from=' . $today . '&to=' . $today);
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        self::assertStringContainsString('cta_click', $content);
+        self::assertStringNotContainsString('No events recorded in this period', $content);
+    }
+
+    #[Test]
+    public function pages_view_page_1_shows_first_results(): void
+    {
+        $client = static::createClient();
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        for ($i = 1; $i <= 25; $i++) {
+            $em->persist(PageView::create(
+                fingerprint: str_repeat('a', 64),
+                pageUrl: sprintf('/page-%03d', $i),
+                referrer: null,
+                viewedAt: new \DateTimeImmutable('today'),
+            ));
+        }
+        $em->flush();
+
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/pages?from=' . $today . '&to=' . $today . '&page=1');
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        // Page 1 should show 20 results; mutant max(2,...) forces page 2 and shows only 5
+        self::assertSame(20, substr_count($content, '<tr') - 1);
+    }
+
+    #[Test]
+    public function pages_view_page_0_clamps_to_page_1(): void
+    {
+        $client = static::createClient();
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+
+        for ($i = 1; $i <= 25; $i++) {
+            $em->persist(PageView::create(
+                fingerprint: str_repeat('a', 64),
+                pageUrl: sprintf('/page-%03d', $i),
+                referrer: null,
+                viewedAt: new \DateTimeImmutable('today'),
+            ));
+        }
+        $em->flush();
+
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $client->request('GET', '/analytics/pages?from=' . $today . '&to=' . $today . '&page=0');
+
+        self::assertResponseStatusCodeSame(200);
+        $content = $client->getResponse()->getContent();
+        // page=0 must clamp to page 1, showing 20 results; mutant max(0,...) allows offset=-20
+        self::assertSame(20, substr_count($content, '<tr') - 1);
     }
 
     #[Test]
