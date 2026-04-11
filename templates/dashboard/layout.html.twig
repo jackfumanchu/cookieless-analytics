@@ -216,6 +216,36 @@
         formatDate(date) { return date.toISOString().slice(0, 10); }
     });
 
+    // Search Controller
+    app.register("search", class extends Controller {
+        static targets = ["input", "hint"];
+        static values = { url: String, from: String, to: String };
+
+        connect() {
+            this._timeout = null;
+        }
+
+        disconnect() {
+            if (this._timeout) clearTimeout(this._timeout);
+        }
+
+        filter() {
+            if (this._timeout) clearTimeout(this._timeout);
+            this._timeout = setTimeout(() => this._perform(), 300);
+        }
+
+        _perform() {
+            const term = this.inputTarget.value.trim();
+            const params = new URLSearchParams({ from: this.fromValue, to: this.toValue });
+            if (term) params.set("search", term);
+
+            const frame = document.getElementById("ca-pages-list");
+            if (frame) {
+                frame.src = this.urlValue + "?" + params.toString();
+            }
+        }
+    });
+
     // Chart Controller (uPlot)
     import uPlot from "uplot";
     app.register("chart", class extends Controller {
