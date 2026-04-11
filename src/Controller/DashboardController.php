@@ -49,7 +49,7 @@ class DashboardController
             return $redirect;
         }
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/index.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/pages/index.html.twig', [
             'from' => $dateRange->from->format('Y-m-d'),
             'to' => $dateRange->to->format('Y-m-d'),
             'layout' => $this->dashboardLayout ?? '@CookielessAnalytics/dashboard/layout.html.twig',
@@ -102,7 +102,7 @@ class DashboardController
             ];
         }
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/pages.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/pages/pages.html.twig', [
             'from' => $dateRange->from->format('Y-m-d'),
             'to' => $dateRange->to->format('Y-m-d'),
             'layout' => $this->dashboardLayout ?? '@CookielessAnalytics/dashboard/layout.html.twig',
@@ -153,7 +153,7 @@ class DashboardController
             ];
         }
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/events.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/pages/events.html.twig', [
             'from' => $dateRange->from->format('Y-m-d'),
             'to' => $dateRange->to->format('Y-m-d'),
             'layout' => $this->dashboardLayout ?? '@CookielessAnalytics/dashboard/layout.html.twig',
@@ -200,7 +200,7 @@ class DashboardController
         $eventsComparison = $this->periodComparer->compare($dateRange, $this->eventRepo->countByPeriod(...));
         $pagesPerVisitorComparison = $this->periodComparer->comparePagesPerVisitor($pageViewsComparison, $visitorsComparison);
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/trends.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/pages/trends.html.twig', [
             'from' => $dateRange->from->format('Y-m-d'),
             'to' => $dateRange->to->format('Y-m-d'),
             'layout' => $this->dashboardLayout ?? '@CookielessAnalytics/dashboard/layout.html.twig',
