@@ -1,26 +1,25 @@
 {% extends layout %}
 
 {% block content %}
-  {# ─── Controls Left ─── #}
-  <div class="controls-left" style="margin-bottom: 20px;">
-    <span class="page-headline">Pages</span>
-    <span class="page-count">{{ totalDistinct }} page{{ totalDistinct != 1 ? 's' : '' }} tracked</span>
-  </div>
-
-  {# ─── Search ─── #}
-  <div class="search-bar"
-       data-controller="search"
-       data-search-url-value="{{ path('cookieless_analytics_dashboard_pages_view') }}"
-       data-search-from-value="{{ from }}"
-       data-search-to-value="{{ to }}">
-    <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><line x1="10.2" y1="10.2" x2="14" y2="14"/></svg>
-    <input class="search-input"
-           type="text"
-           placeholder="Search pages by URL..."
-           value="{{ search }}"
-           data-search-target="input"
-           data-action="input->search#filter">
-    <span class="search-hint">{{ totalDistinct }} results</span>
+  {# ─── Header Row: title + search ─── #}
+  <div class="pages-header">
+    <div class="controls-left">
+      <span class="page-headline">Pages</span>
+      <span class="page-count">{{ totalTracked }} page{{ totalTracked != 1 ? 's' : '' }} tracked</span>
+    </div>
+    <div class="search-bar"
+         data-controller="search"
+         data-search-url-value="{{ path('cookieless_analytics_dashboard_pages_view') }}"
+         data-search-from-value="{{ from }}"
+         data-search-to-value="{{ to }}">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7" cy="7" r="4.5"/><line x1="10.2" y1="10.2" x2="14" y2="14"/></svg>
+      <input class="search-input"
+             type="text"
+             placeholder="Search pages by URL..."
+             value="{{ search }}"
+             data-search-target="input"
+             data-action="input->search#filter">
+    </div>
   </div>
 
   {# ─── Two-Pane Layout ─── #}
@@ -53,6 +52,7 @@
       {% else %}
       <div class="ca-empty">{% if search %}No pages match your search{% else %}No page data for this period{% endif %}</div>
       {% endif %}
+      <div class="search-hint">{{ totalDistinct }} result{{ totalDistinct != 1 ? 's' : '' }}</div>
       {% include '@CookielessAnalytics/dashboard/pages/_pagination.html.twig' %}
     </div>
     </turbo-frame>

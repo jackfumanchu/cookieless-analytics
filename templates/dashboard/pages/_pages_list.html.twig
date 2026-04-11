@@ -24,6 +24,7 @@
   {% else %}
   <div class="ca-empty">No pages match your search</div>
   {% endif %}
+  <div class="search-hint">{{ totalDistinct }} result{{ totalDistinct != 1 ? 's' : '' }}</div>
   {% include '@CookielessAnalytics/dashboard/pages/_pagination.html.twig' %}
 </div>
 </turbo-frame>

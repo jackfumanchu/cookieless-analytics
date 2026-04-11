@@ -79,8 +79,13 @@ class DashboardController
         $searchTerm = is_string($search) && $search !== '' ? $search : null;
         $perPage = 20;
 
-        // Count total distinct pages (for pagination)
-        $totalDistinct = $this->pageViewRepo->countDistinctPages($dateRange->from, $dateRange->to, $searchTerm);
+        // Total pages tracked (unfiltered, for header)
+        $totalTracked = $this->pageViewRepo->countDistinctPages($dateRange->from, $dateRange->to);
+
+        // Count filtered distinct pages (for pagination and results hint)
+        $totalDistinct = $searchTerm !== null
+            ? $this->pageViewRepo->countDistinctPages($dateRange->from, $dateRange->to, $searchTerm)
+            : $totalTracked;
         $totalPagesCount = max(1, (int) ceil($totalDistinct / $perPage));
 
         // Read and clamp page number
@@ -97,6 +102,7 @@ class DashboardController
                 'pages' => $pages,
                 'totalPages' => $totalPages,
                 'totalDistinct' => $totalDistinct,
+                'totalTracked' => $totalTracked,
                 'currentPage' => $page,
                 'totalPagesCount' => $totalPagesCount,
                 'perPage' => $perPage,
@@ -141,6 +147,7 @@ class DashboardController
             'pages' => $pages,
             'totalPages' => $totalPages,
             'totalDistinct' => $totalDistinct,
+            'totalTracked' => $totalTracked,
             'selectedDetail' => $selectedDetail,
             'search' => $searchTerm ?? '',
             'currentPage' => $page,
