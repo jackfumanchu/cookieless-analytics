@@ -4,14 +4,30 @@ declare(strict_types=1);
 
 namespace Jackfumanchu\CookielessAnalyticsBundle\Twig;
 
+use Composer\InstalledVersions;
+use Jackfumanchu\CookielessAnalyticsBundle\Repository\PageViewRepository;
 use Twig\Extension\AbstractExtension;
+use Twig\Extension\GlobalsInterface;
 use Twig\TwigFunction;
 
-class CookielessAnalyticsExtension extends AbstractExtension
+class CookielessAnalyticsExtension extends AbstractExtension implements GlobalsInterface
 {
     public function __construct(
         private readonly string $collectUrl,
+        private readonly PageViewRepository $pageViewRepo,
     ) {
+    }
+
+    public function getGlobals(): array
+    {
+        $version = InstalledVersions::getVersion('jackfumanchu/cookieless-analytics-bundle') ?? '0.0.0';
+        $earliest = $this->pageViewRepo->findEarliestViewedAt();
+        $daysActive = $earliest !== null ? (int) $earliest->diff(new \DateTimeImmutable('today'))->days + 1 : 0;
+
+        return [
+            'ca_bundle_version' => $version,
+            'ca_days_active' => $daysActive,
+        ];
     }
 
     public function getFunctions(): array

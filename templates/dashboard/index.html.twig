@@ -1,45 +1,6 @@
 {% extends layout %}
 
-{% block body %}
-<div class="broadsheet">
-
-  {# ─── Masthead ─── #}
-  <header class="masthead">
-    {% set vParts = bundleVersion|split('.') %}
-    <div class="masthead-above">
-      <span>Vol. {{ vParts[0]|default(0) }}, Ch. {{ vParts[1]|default(0) }}, p. {{ vParts[2]|default(0) }} &middot; No. {{ daysActive }}</span>
-      <span>{{ "now"|date("l, F j, Y") }}</span>
-      <span>Cookie-Free Since 2026</span>
-    </div>
-    <h1 class="masthead-title">The Analytics Record</h1>
-    <p class="masthead-subtitle">Cookieless &middot; Privacy-First &middot; Honest Data</p>
-    <div class="masthead-rule" data-date-range-target="mastheadRule">{{ from }} &mdash; {{ to }}</div>
-  </header>
-
-  {# ─── Section Nav ─── #}
-  <nav class="section-nav">
-    <a href="{{ path('cookieless_analytics_dashboard', {from: from, to: to}) }}" class="active">Overview</a>
-    <a href="{{ path('cookieless_analytics_dashboard', {from: from, to: to}) }}">Pages</a>
-    <a href="{{ path('cookieless_analytics_dashboard', {from: from, to: to}) }}">Events</a>
-    <a href="{{ path('cookieless_analytics_dashboard', {from: from, to: to}) }}">Trends</a>
-  </nav>
-
-  {# ─── Date Controls ─── #}
-  <div class="controls-bar" data-controller="date-range" data-date-range-from-value="{{ from }}" data-date-range-to-value="{{ to }}">
-    <div class="edition-label" data-date-range-target="editionLabel"></div>
-    <div class="controls-right">
-      <button class="period-btn" data-date-range-target="shortcut" data-period="today">1D</button>
-      <button class="period-btn" data-date-range-target="shortcut" data-period="7days">7D</button>
-      <button class="period-btn" data-date-range-target="shortcut" data-period="30days">30D</button>
-      <button class="period-btn" data-date-range-target="shortcut" data-period="month">MTD</button>
-      <span style="width:8px;"></span>
-      <input class="date-field" type="text" value="{{ from }}" data-date-range-target="fromInput" name="from">
-      <span class="date-dash">&mdash;</span>
-      <input class="date-field" type="text" value="{{ to }}" data-date-range-target="toInput" name="to">
-      <button class="period-btn" data-action="date-range#apply" style="background:var(--ink);color:var(--paper);border-color:var(--ink);">Apply</button>
-    </div>
-  </div>
-
+{% block content %}
   {# ─── Headline Numbers (KPIs) ─── #}
   <turbo-frame id="ca-overview" src="{{ path('cookieless_analytics_dashboard_overview', {from: from, to: to}) }}" loading="lazy">
     <div class="headline-numbers">
@@ -82,15 +43,4 @@
       </turbo-frame>
     </div>
   </div>
-
-  {# ─── Folio ─── #}
-  <footer class="folio">
-    The Analytics Record &middot; Published continuously since 2024
-    <div class="shield">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l5.5 2v4c0 3.5-2.5 6-5.5 7.5-3-1.5-5.5-4-5.5-7.5v-4z"/><polyline points="5.5 8 7 9.5 10.5 6"/></svg>
-      No cookies. No tracking scripts. Just honest numbers.
-    </div>
-  </footer>
-
-</div>
 {% endblock %}
