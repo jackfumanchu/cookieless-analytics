@@ -51,12 +51,20 @@
 
     // Date Range Controller
     app.register("date-range", class extends Controller {
-        static targets = ["shortcut", "fromInput", "toInput"];
+        static targets = ["shortcut", "fromInput", "toInput", "mastheadRule", "editionLabel"];
         static values = { from: String, to: String };
 
         connect() {
             this.highlightActiveShortcut();
             this.normalizeDateInputs();
+            this.updateEdition();
+        }
+
+        updateEdition() {
+            if (!this.hasEditionLabelTarget) return;
+            const h = new Date().getHours();
+            const edition = h < 6 ? "Night Edition" : h < 12 ? "Morning Edition" : h < 17 ? "Afternoon Edition" : "Evening Edition";
+            this.editionLabelTarget.textContent = edition;
         }
 
         normalizeDateInputs() {
@@ -122,6 +130,9 @@
             this.fromValue = from;
             this.toValue = to;
             this.highlightActiveShortcut();
+            if (this.hasMastheadRuleTarget) {
+                this.mastheadRuleTarget.textContent = from + " — " + to;
+            }
         }
 
         highlightActiveShortcut() {
@@ -145,6 +156,10 @@
         disconnect() { if (this.chart) this.chart.destroy(); }
 
         renderChart() {
+            if (!this.datesValue.length) {
+                this.element.innerHTML = '<div class="ca-empty" style="display:flex;align-items:center;justify-content:center;height:200px;">No data for this period</div>';
+                return;
+            }
             const timestamps = this.datesValue.map(d => new Date(d + "T00:00:00").getTime() / 1000);
             const ink = getComputedStyle(document.documentElement).getPropertyValue('--ink').trim();
             const inkMuted = getComputedStyle(document.documentElement).getPropertyValue('--ink-muted').trim();

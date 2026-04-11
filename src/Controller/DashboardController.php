@@ -90,7 +90,7 @@ class DashboardController
             : 0.0;
         $pagesPerVisitorComparison = PeriodComparison::fromFloat($pagesPerVisitor, $prevPagesPerVisitor);
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/_overview.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_overview.html.twig', [
             'pageViews' => $pageViews,
             'uniqueVisitors' => $uniqueVisitors,
             'events' => $events,
@@ -120,7 +120,7 @@ class DashboardController
         $views = array_map(fn (array $row) => (int) $row['count'], $daily);
         $visitors = array_map(fn (array $row) => (int) $row['unique'], $daily);
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/_trends.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_trends.html.twig', [
             'dates' => json_encode($dates),
             'views' => json_encode($views),
             'visitors' => json_encode($visitors),
@@ -145,7 +145,7 @@ class DashboardController
 
         $pages = $this->pageViewRepo->findTopPages($dateRange->from, $dateRange->to, 10);
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/_top_pages.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_top_pages.html.twig', [
             'pages' => $pages,
         ]);
 
@@ -169,7 +169,7 @@ class DashboardController
         $referrers = $this->pageViewRepo->findTopReferrers($dateRange->from, $dateRange->to, 10);
         $totalVisits = array_sum(array_column($referrers, 'visits'));
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/_referrers.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_referrers.html.twig', [
             'referrers' => $referrers,
             'totalVisits' => $totalVisits,
         ]);
@@ -193,7 +193,7 @@ class DashboardController
 
         $events = $this->eventRepo->findTopEvents($dateRange->from, $dateRange->to, 10);
 
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/_events.html.twig', [
+        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_events.html.twig', [
             'events' => $events,
         ]);
 

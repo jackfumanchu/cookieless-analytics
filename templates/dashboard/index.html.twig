@@ -9,11 +9,11 @@
     <div class="masthead-above">
       <span>Vol. {{ vParts[0]|default(0) }}, Ch. {{ vParts[1]|default(0) }}, p. {{ vParts[2]|default(0) }} &middot; No. {{ daysActive }}</span>
       <span>{{ "now"|date("l, F j, Y") }}</span>
-      <span>Cookie-Free Since 2024</span>
+      <span>Cookie-Free Since 2026</span>
     </div>
     <h1 class="masthead-title">The Analytics Record</h1>
     <p class="masthead-subtitle">Cookieless &middot; Privacy-First &middot; Honest Data</p>
-    <div class="masthead-rule">{{ from }} &mdash; {{ to }}</div>
+    <div class="masthead-rule" data-date-range-target="mastheadRule">{{ from }} &mdash; {{ to }}</div>
   </header>
 
   {# ─── Section Nav ─── #}
@@ -26,7 +26,7 @@
 
   {# ─── Date Controls ─── #}
   <div class="controls-bar" data-controller="date-range" data-date-range-from-value="{{ from }}" data-date-range-to-value="{{ to }}">
-    <div class="edition-label">Edition <span>&mdash; {{ from }} to {{ to }}</span></div>
+    <div class="edition-label" data-date-range-target="editionLabel"></div>
     <div class="controls-right">
       <button class="period-btn" data-date-range-target="shortcut" data-period="today">1D</button>
       <button class="period-btn" data-date-range-target="shortcut" data-period="7days">7D</button>

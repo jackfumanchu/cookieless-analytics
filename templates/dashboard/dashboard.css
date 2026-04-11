@@ -638,3 +638,17 @@
     margin-right: 0;
   }
 }
+
+/* ─── Empty state ─── */
+.ca-empty {
+  font-family: var(--editorial);
+  font-size: 14px;
+  color: var(--ink-muted);
+  padding: 16px 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 120px;
+}

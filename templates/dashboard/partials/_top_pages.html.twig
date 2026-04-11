@@ -1,6 +1,7 @@
 <turbo-frame id="ca-top-pages">
   <h2 class="section-head">Top Pages</h2>
   <p class="section-deck">Most visited pages this period, ranked by total views.</p>
+  {% if pages is not empty %}
   <table class="ed-table">
     <thead>
       <tr>
@@ -18,11 +19,10 @@
         <td class="num-col">{{ page.views|number_format(0, '.', ',') }}</td>
         <td class="num-col">{{ page.uniqueVisitors|number_format(0, '.', ',') }}</td>
       </tr>
-      {% else %}
-      <tr>
-        <td colspan="4" style="font-family:var(--editorial);color:var(--ink-muted);padding:16px 0;">No data for this period</td>
-      </tr>
       {% endfor %}
     </tbody>
   </table>
+  {% else %}
+  <p class="ca-empty">No data for this period</p>
+  {% endif %}
 </turbo-frame>

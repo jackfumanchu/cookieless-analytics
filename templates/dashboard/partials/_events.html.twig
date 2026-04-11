@@ -1,6 +1,7 @@
 <turbo-frame id="ca-events">
   <h2 class="section-head">Events Dispatch</h2>
   <p class="section-deck">Custom events tracked across the site, ordered by frequency.</p>
+  {% if events is not empty %}
   <ul class="event-list">
     {% set maxOccurrences = events|first.occurrences|default(1) %}
     {% for event in events %}
@@ -9,10 +10,9 @@
       <span class="event-bar-track"><span class="event-bar-fill" style="width:{{ (event.occurrences / maxOccurrences * 100)|round }}%;"></span></span>
       <span class="event-count">{{ event.occurrences|number_format(0, '.', ',') }}</span>
     </li>
-    {% else %}
-    <li class="event-item">
-      <span class="event-name" style="color:var(--ink-muted);">No data for this period</span>
-    </li>
     {% endfor %}
   </ul>
+  {% else %}
+  <p class="ca-empty">No data for this period</p>
+  {% endif %}
 </turbo-frame>
