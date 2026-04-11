@@ -6,6 +6,7 @@ namespace Jackfumanchu\CookielessAnalyticsBundle;
 
 use Jackfumanchu\CookielessAnalyticsBundle\Controller\CollectController;
 use Jackfumanchu\CookielessAnalyticsBundle\Controller\DashboardController;
+use Jackfumanchu\CookielessAnalyticsBundle\Controller\DashboardFrameController;
 use Jackfumanchu\CookielessAnalyticsBundle\Controller\EventController;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\AnalyticsEventRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\PageViewRepository;
@@ -87,6 +88,8 @@ class CookielessAnalyticsBundle extends AbstractBundle
 
         $services->set(PeriodComparer::class);
 
+        $services->set(\Jackfumanchu\CookielessAnalyticsBundle\Service\TrendsStatsCalculator::class);
+
         $services->set(CollectController::class);
 
         $services->set(EventController::class);
@@ -98,6 +101,9 @@ class CookielessAnalyticsBundle extends AbstractBundle
             $services->set(DashboardController::class)
                 ->arg('$dashboardRole', $config['dashboard_role'])
                 ->arg('$dashboardLayout', $config['dashboard_layout']);
+
+            $services->set(DashboardFrameController::class)
+                ->arg('$dashboardRole', $config['dashboard_role']);
         }
     }
 

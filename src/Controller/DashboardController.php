@@ -7,8 +7,8 @@ namespace Jackfumanchu\CookielessAnalyticsBundle\Controller;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\AnalyticsEventRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Repository\PageViewRepository;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\DateRangeResolver;
-use Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparer;
+use Jackfumanchu\CookielessAnalyticsBundle\Service\TrendsStatsCalculator;
 use Jackfumanchu\CookielessAnalyticsBundle\Service\DateRange;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +26,7 @@ class DashboardController
         private readonly PageViewRepository $pageViewRepo,
         private readonly AnalyticsEventRepository $eventRepo,
         private readonly PeriodComparer $periodComparer,
+        private readonly TrendsStatsCalculator $trendsStats,
         private readonly ?AuthorizationCheckerInterface $authorizationChecker,
         private readonly string $dashboardRole,
         private readonly ?string $dashboardLayout,
@@ -83,19 +84,11 @@ class DashboardController
         if ($selectedPage !== null) {
             $selectedViews = $this->periodComparer->compare(
                 $dateRange,
-                fn (\DateTimeImmutable $f, \DateTimeImmutable $t) => (int) $this->pageViewRepo->createQueryBuilder('p')
-                    ->select('COUNT(p.id)')
-                    ->where('p.viewedAt >= :from')->andWhere('p.viewedAt <= :to')->andWhere('p.pageUrl = :url')
-                    ->setParameter('from', $f)->setParameter('to', $t)->setParameter('url', $selectedPage)
-                    ->getQuery()->getSingleScalarResult()
+                fn (\DateTimeImmutable $f, \DateTimeImmutable $t) => $this->pageViewRepo->countByPeriodForPage($selectedPage, $f, $t),
             );
             $selectedVisitors = $this->periodComparer->compare(
                 $dateRange,
-                fn (\DateTimeImmutable $f, \DateTimeImmutable $t) => (int) $this->pageViewRepo->createQueryBuilder('p')
-                    ->select('COUNT(DISTINCT p.fingerprint)')
-                    ->where('p.viewedAt >= :from')->andWhere('p.viewedAt <= :to')->andWhere('p.pageUrl = :url')
-                    ->setParameter('from', $f)->setParameter('to', $t)->setParameter('url', $selectedPage)
-                    ->getQuery()->getSingleScalarResult()
+                fn (\DateTimeImmutable $f, \DateTimeImmutable $t) => $this->pageViewRepo->countUniqueVisitorsByPeriodForPage($selectedPage, $f, $t),
             );
             $selectedDaily = $this->pageViewRepo->countByDayForPage($selectedPage, $dateRange->from, $dateRange->to);
             $selectedReferrers = $this->pageViewRepo->findTopReferrersForPage($selectedPage, $dateRange->from, $dateRange->to, 5);
@@ -200,40 +193,12 @@ class DashboardController
         $prevDaily = $this->pageViewRepo->countByDay($dateRange->comparisonFrom, $dateRange->comparisonTo);
         $prevViews = array_map(fn (array $row) => (int) $row['count'], $prevDaily);
 
-        $totalViews = array_sum($views);
-        $totalVisitors = array_sum($visitors);
-        $numDays = count($views);
-        $dailyAvgViews = $numDays > 0 ? (int) round($totalViews / $numDays) : 0;
-        $dailyAvgVisitors = $numDays > 0 ? (int) round($totalVisitors / $numDays) : 0;
-
-        $peakDay = null;
-        $lowDay = null;
-        if ($numDays > 0) {
-            $maxIdx = array_search(max($views), $views, true);
-            $minIdx = array_search(min($views), $views, true);
-            $peakDay = ['date' => $dates[$maxIdx], 'views' => $views[$maxIdx]];
-            $lowDay = ['date' => $dates[$minIdx], 'views' => $views[$minIdx]];
-        }
-
-        $weekdayViews = [];
-        $weekendViews = [];
-        foreach ($daily as $row) {
-            $dow = (int) (new \DateTimeImmutable($row['date']))->format('N');
-            if ($dow <= 5) {
-                $weekdayViews[] = (int) $row['count'];
-            } else {
-                $weekendViews[] = (int) $row['count'];
-            }
-        }
-        $weekdayAvg = count($weekdayViews) > 0 ? (int) round(array_sum($weekdayViews) / count($weekdayViews)) : 0;
-        $weekendAvg = count($weekendViews) > 0 ? (int) round(array_sum($weekendViews) / count($weekendViews)) : 0;
+        $stats = $this->trendsStats->compute($daily);
 
         $pageViewsComparison = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countByPeriod(...));
         $visitorsComparison = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countUniqueVisitorsByPeriod(...));
         $eventsComparison = $this->periodComparer->compare($dateRange, $this->eventRepo->countByPeriod(...));
-        $pagesPerVisitor = $visitorsComparison->current > 0 ? round($pageViewsComparison->current / $visitorsComparison->current, 1) : 0.0;
-        $prevPagesPerVisitor = $visitorsComparison->previous > 0 ? round($pageViewsComparison->previous / $visitorsComparison->previous, 1) : 0.0;
-        $pagesPerVisitorComparison = PeriodComparison::fromFloat($pagesPerVisitor, $prevPagesPerVisitor);
+        $pagesPerVisitorComparison = $this->periodComparer->comparePagesPerVisitor($pageViewsComparison, $visitorsComparison);
 
         $html = $this->twig->render('@CookielessAnalytics/dashboard/trends.html.twig', [
             'from' => $dateRange->from->format('Y-m-d'),
@@ -244,152 +209,16 @@ class DashboardController
             'views' => json_encode($views),
             'visitors' => json_encode($visitors),
             'prevViews' => json_encode($prevViews),
-            'peakDay' => $peakDay,
-            'lowDay' => $lowDay,
-            'dailyAvgViews' => $dailyAvgViews,
-            'dailyAvgVisitors' => $dailyAvgVisitors,
-            'weekdayAvg' => $weekdayAvg,
-            'weekendAvg' => $weekendAvg,
+            'peakDay' => $stats['peakDay'],
+            'lowDay' => $stats['lowDay'],
+            'dailyAvgViews' => $stats['dailyAvgViews'],
+            'dailyAvgVisitors' => $stats['dailyAvgVisitors'],
+            'weekdayAvg' => $stats['weekdayAvg'],
+            'weekendAvg' => $stats['weekendAvg'],
             'pageViewsComparison' => $pageViewsComparison,
             'visitorsComparison' => $visitorsComparison,
             'eventsComparison' => $eventsComparison,
             'pagesPerVisitorComparison' => $pagesPerVisitorComparison,
-        ]);
-
-        return new Response($html);
-    }
-
-    #[Route(path: '/frame/overview', name: 'cookieless_analytics_dashboard_overview', methods: ['GET'])]
-    public function overview(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted();
-
-        $dateRange = $this->dateRangeResolver->resolve(
-            $request->query->getString('from') ?: null,
-            $request->query->getString('to') ?: null,
-        );
-
-        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
-            return $redirect;
-        }
-
-        $pageViews = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countByPeriod(...));
-        $uniqueVisitors = $this->periodComparer->compare($dateRange, $this->pageViewRepo->countUniqueVisitorsByPeriod(...));
-        $events = $this->periodComparer->compare($dateRange, $this->eventRepo->countByPeriod(...));
-
-        $pagesPerVisitor = $uniqueVisitors->current > 0
-            ? round($pageViews->current / $uniqueVisitors->current, 1)
-            : 0.0;
-        $prevPagesPerVisitor = $uniqueVisitors->previous > 0
-            ? round($pageViews->previous / $uniqueVisitors->previous, 1)
-            : 0.0;
-        $pagesPerVisitorComparison = PeriodComparison::fromFloat($pagesPerVisitor, $prevPagesPerVisitor);
-
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_overview.html.twig', [
-            'pageViews' => $pageViews,
-            'uniqueVisitors' => $uniqueVisitors,
-            'events' => $events,
-            'pagesPerVisitor' => $pagesPerVisitorComparison,
-        ]);
-
-        return new Response($html);
-    }
-
-    #[Route(path: '/frame/trends', name: 'cookieless_analytics_dashboard_trends', methods: ['GET'])]
-    public function trends(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted();
-
-        $dateRange = $this->dateRangeResolver->resolve(
-            $request->query->getString('from') ?: null,
-            $request->query->getString('to') ?: null,
-        );
-
-        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
-            return $redirect;
-        }
-
-        $daily = $this->pageViewRepo->countByDay($dateRange->from, $dateRange->to);
-
-        $dates = array_map(fn (array $row) => $row['date'], $daily);
-        $views = array_map(fn (array $row) => (int) $row['count'], $daily);
-        $visitors = array_map(fn (array $row) => (int) $row['unique'], $daily);
-
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_trends.html.twig', [
-            'dates' => json_encode($dates),
-            'views' => json_encode($views),
-            'visitors' => json_encode($visitors),
-        ]);
-
-        return new Response($html);
-    }
-
-    #[Route(path: '/frame/top-pages', name: 'cookieless_analytics_dashboard_top_pages', methods: ['GET'])]
-    public function topPages(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted();
-
-        $dateRange = $this->dateRangeResolver->resolve(
-            $request->query->getString('from') ?: null,
-            $request->query->getString('to') ?: null,
-        );
-
-        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
-            return $redirect;
-        }
-
-        $pages = $this->pageViewRepo->findTopPages($dateRange->from, $dateRange->to, 10);
-
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_top_pages.html.twig', [
-            'pages' => $pages,
-        ]);
-
-        return new Response($html);
-    }
-
-    #[Route(path: '/frame/referrers', name: 'cookieless_analytics_dashboard_referrers', methods: ['GET'])]
-    public function referrers(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted();
-
-        $dateRange = $this->dateRangeResolver->resolve(
-            $request->query->getString('from') ?: null,
-            $request->query->getString('to') ?: null,
-        );
-
-        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
-            return $redirect;
-        }
-
-        $referrers = $this->pageViewRepo->findTopReferrers($dateRange->from, $dateRange->to, 10);
-        $totalVisits = array_sum(array_column($referrers, 'visits'));
-
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_referrers.html.twig', [
-            'referrers' => $referrers,
-            'totalVisits' => $totalVisits,
-        ]);
-
-        return new Response($html);
-    }
-
-    #[Route(path: '/frame/events', name: 'cookieless_analytics_dashboard_events', methods: ['GET'])]
-    public function events(Request $request): Response
-    {
-        $this->denyAccessUnlessGranted();
-
-        $dateRange = $this->dateRangeResolver->resolve(
-            $request->query->getString('from') ?: null,
-            $request->query->getString('to') ?: null,
-        );
-
-        if ($redirect = $this->redirectIfDatesNormalized($request, $dateRange)) {
-            return $redirect;
-        }
-
-        $events = $this->eventRepo->findTopEvents($dateRange->from, $dateRange->to, 10);
-
-        $html = $this->twig->render('@CookielessAnalytics/dashboard/partials/_events.html.twig', [
-            'events' => $events,
         ]);
 
         return new Response($html);
