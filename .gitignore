@@ -40,3 +40,4 @@ docs/mockup
 ###> Panther tests ###
 /drivers
 ###< Panther tests ###
+tests/App/public/index.php
