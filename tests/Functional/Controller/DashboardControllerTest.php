@@ -80,7 +80,7 @@ class DashboardControllerTest extends WebTestCase
         $em->flush();
 
         $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $client->request('GET', '/analytics/top-pages?from=' . $today . '&to=' . $today);
+        $client->request('GET', '/analytics/frame/top-pages?from=' . $today . '&to=' . $today);
 
         self::assertResponseStatusCodeSame(200);
         $content = $client->getResponse()->getContent();
@@ -112,7 +112,7 @@ class DashboardControllerTest extends WebTestCase
         $em->flush();
 
         $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $client->request('GET', '/analytics/events?from=' . $today . '&to=' . $today);
+        $client->request('GET', '/analytics/frame/events?from=' . $today . '&to=' . $today);
 
         self::assertResponseStatusCodeSame(200);
         $content = $client->getResponse()->getContent();
@@ -135,7 +135,7 @@ class DashboardControllerTest extends WebTestCase
         $em->flush();
 
         $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $client->request('GET', '/analytics/trends?from=' . $today . '&to=' . $today);
+        $client->request('GET', '/analytics/frame/trends?from=' . $today . '&to=' . $today);
 
         self::assertResponseStatusCodeSame(200);
         $content = $client->getResponse()->getContent();
@@ -172,7 +172,7 @@ class DashboardControllerTest extends WebTestCase
         $em->flush();
 
         $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $client->request('GET', '/analytics/referrers?from=' . $today . '&to=' . $today);
+        $client->request('GET', '/analytics/frame/referrers?from=' . $today . '&to=' . $today);
 
         self::assertResponseStatusCodeSame(200);
         $content = $client->getResponse()->getContent();
@@ -209,7 +209,7 @@ class DashboardControllerTest extends WebTestCase
         $em->flush();
 
         $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
-        $client->request('GET', '/analytics/overview?from=' . $today . '&to=' . $today);
+        $client->request('GET', '/analytics/frame/overview?from=' . $today . '&to=' . $today);
 
         self::assertResponseStatusCodeSame(200);
         $content = $client->getResponse()->getContent();
@@ -233,9 +233,9 @@ class DashboardControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $client->request('GET', '/analytics/referrers?from=2026-04-31&to=2026-05-10');
+        $client->request('GET', '/analytics/frame/referrers?from=2026-04-31&to=2026-05-10');
 
-        self::assertResponseRedirects('/analytics/referrers?from=2026-05-01&to=2026-05-10');
+        self::assertResponseRedirects('/analytics/frame/referrers?from=2026-05-01&to=2026-05-10');
     }
 
     #[Test]

@@ -58,7 +58,7 @@ class DashboardController
         return new Response($html);
     }
 
-    #[Route(path: '/overview', name: 'cookieless_analytics_dashboard_overview', methods: ['GET'])]
+    #[Route(path: '/frame/overview', name: 'cookieless_analytics_dashboard_overview', methods: ['GET'])]
     public function overview(Request $request): Response
     {
         $this->denyAccessUnlessGranted();
@@ -94,7 +94,7 @@ class DashboardController
         return new Response($html);
     }
 
-    #[Route(path: '/trends', name: 'cookieless_analytics_dashboard_trends', methods: ['GET'])]
+    #[Route(path: '/frame/trends', name: 'cookieless_analytics_dashboard_trends', methods: ['GET'])]
     public function trends(Request $request): Response
     {
         $this->denyAccessUnlessGranted();
@@ -123,7 +123,7 @@ class DashboardController
         return new Response($html);
     }
 
-    #[Route(path: '/top-pages', name: 'cookieless_analytics_dashboard_top_pages', methods: ['GET'])]
+    #[Route(path: '/frame/top-pages', name: 'cookieless_analytics_dashboard_top_pages', methods: ['GET'])]
     public function topPages(Request $request): Response
     {
         $this->denyAccessUnlessGranted();
@@ -146,7 +146,7 @@ class DashboardController
         return new Response($html);
     }
 
-    #[Route(path: '/referrers', name: 'cookieless_analytics_dashboard_referrers', methods: ['GET'])]
+    #[Route(path: '/frame/referrers', name: 'cookieless_analytics_dashboard_referrers', methods: ['GET'])]
     public function referrers(Request $request): Response
     {
         $this->denyAccessUnlessGranted();
@@ -171,7 +171,7 @@ class DashboardController
         return new Response($html);
     }
 
-    #[Route(path: '/events', name: 'cookieless_analytics_dashboard_events', methods: ['GET'])]
+    #[Route(path: '/frame/events', name: 'cookieless_analytics_dashboard_events', methods: ['GET'])]
     public function events(Request $request): Response
     {
         $this->denyAccessUnlessGranted();
