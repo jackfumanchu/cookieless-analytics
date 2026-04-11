@@ -42,6 +42,34 @@ class PageViewRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function countByPeriodForPage(string $pageUrl, \DateTimeImmutable $from, \DateTimeImmutable $to): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->where('p.viewedAt >= :from')
+            ->andWhere('p.viewedAt <= :to')
+            ->andWhere('p.pageUrl = :url')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->setParameter('url', $pageUrl)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countUniqueVisitorsByPeriodForPage(string $pageUrl, \DateTimeImmutable $from, \DateTimeImmutable $to): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(DISTINCT p.fingerprint)')
+            ->where('p.viewedAt >= :from')
+            ->andWhere('p.viewedAt <= :to')
+            ->andWhere('p.pageUrl = :url')
+            ->setParameter('from', $from)
+            ->setParameter('to', $to)
+            ->setParameter('url', $pageUrl)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     /**
      * @return list<array{pageUrl: string, views: int, uniqueVisitors: int}>
      */

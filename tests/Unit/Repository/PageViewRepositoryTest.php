@@ -197,4 +197,34 @@ class PageViewRepositoryTest extends KernelTestCase
         self::assertSame(1, (int) $result[1]['count']);
         self::assertSame(1, (int) $result[1]['unique']);
     }
+
+    #[Test]
+    public function count_by_period_for_page_filters_by_url(): void
+    {
+        $this->createPageView('/home', 'aaa', '2026-04-05');
+        $this->createPageView('/home', 'bbb', '2026-04-06');
+        $this->createPageView('/about', 'aaa', '2026-04-06');
+
+        $from = new \DateTimeImmutable('2026-04-05 00:00:00');
+        $to = new \DateTimeImmutable('2026-04-07 23:59:59');
+
+        self::assertSame(2, $this->repository->countByPeriodForPage('/home', $from, $to));
+    }
+
+    #[Test]
+    public function count_unique_visitors_by_period_for_page_filters_by_url(): void
+    {
+        $fp = str_repeat('a', 64);
+        $fp2 = str_repeat('b', 64);
+
+        $this->createPageView('/home', $fp, '2026-04-05');
+        $this->createPageView('/home', $fp, '2026-04-06');
+        $this->createPageView('/home', $fp2, '2026-04-06');
+        $this->createPageView('/about', $fp, '2026-04-06');
+
+        $from = new \DateTimeImmutable('2026-04-05 00:00:00');
+        $to = new \DateTimeImmutable('2026-04-07 23:59:59');
+
+        self::assertSame(2, $this->repository->countUniqueVisitorsByPeriodForPage('/home', $from, $to));
+    }
 }

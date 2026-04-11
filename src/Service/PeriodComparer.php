@@ -27,4 +27,12 @@ class PeriodComparer
 
         return PeriodComparison::fromFloat($current, $previous);
     }
+
+    public function comparePagesPerVisitor(PeriodComparison $pageViews, PeriodComparison $visitors): PeriodComparison
+    {
+        $current = $visitors->current > 0 ? round($pageViews->current / $visitors->current, 1) : 0.0;
+        $previous = $visitors->previous > 0 ? round($pageViews->previous / $visitors->previous, 1) : 0.0;
+
+        return PeriodComparison::fromFloat($current, $previous);
+    }
 }

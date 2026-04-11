@@ -66,4 +66,30 @@ class PeriodComparerTest extends TestCase
         self::assertSame(3.7, $result->previousFloat);
         self::assertSame(5.4, $result->changePercent);
     }
+
+    #[Test]
+    public function compare_pages_per_visitor_computes_ratio(): void
+    {
+        $pageViews = \Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison::from(390, 370);
+        $visitors = \Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison::from(100, 100);
+
+        $result = $this->comparer->comparePagesPerVisitor($pageViews, $visitors);
+
+        self::assertSame(3.9, $result->currentFloat);
+        self::assertSame(3.7, $result->previousFloat);
+        self::assertSame(5.4, $result->changePercent);
+    }
+
+    #[Test]
+    public function compare_pages_per_visitor_handles_zero_visitors(): void
+    {
+        $pageViews = \Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison::from(100, 50);
+        $visitors = \Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison::from(0, 0);
+
+        $result = $this->comparer->comparePagesPerVisitor($pageViews, $visitors);
+
+        self::assertSame(0.0, $result->currentFloat);
+        self::assertSame(0.0, $result->previousFloat);
+        self::assertSame(0.0, $result->changePercent);
+    }
 }
