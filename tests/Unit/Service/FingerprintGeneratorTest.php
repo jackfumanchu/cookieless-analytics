@@ -67,4 +67,15 @@ class FingerprintGeneratorTest extends TestCase
 
         self::assertNotSame($result1, $result2);
     }
+
+    #[Test]
+    public function generate_returns_expected_hash_for_known_input(): void
+    {
+        $date = new \DateTimeImmutable('2026-04-10');
+
+        $result = $this->generator->generate('127.0.0.1', 'Mozilla/5.0', $date);
+
+        $expected = hash('sha256', '127.0.0.1' . 'Mozilla/5.0' . '2026-04-10');
+        self::assertSame($expected, $result);
+    }
 }

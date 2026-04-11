@@ -82,4 +82,12 @@ class UrlSanitizerTest extends TestCase
 
         self::assertSame('https://example.com/page?category=music', $result);
     }
+
+    #[Test]
+    public function sanitize_full_url_with_all_params_stripped_keeps_host_and_path(): void
+    {
+        $result = $this->sanitizer->sanitize('https://example.com/page?token=abc&password=xyz');
+
+        self::assertSame('https://example.com/page', $result);
+    }
 }

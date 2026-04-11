@@ -128,6 +128,18 @@ class EventControllerTest extends WebTestCase
     }
 
     #[Test]
+    public function event_with_non_array_json_returns_400(): void
+    {
+        $client = static::createClient();
+
+        $client->request('POST', '/ca/event', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], '"just a string"');
+
+        self::assertResponseStatusCodeSame(400);
+    }
+
+    #[Test]
     public function event_with_malformed_json_returns_400(): void
     {
         $client = static::createClient();

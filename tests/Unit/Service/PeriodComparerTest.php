@@ -92,4 +92,17 @@ class PeriodComparerTest extends TestCase
         self::assertSame(0.0, $result->previousFloat);
         self::assertSame(0.0, $result->changePercent);
     }
+
+    #[Test]
+    public function compare_pages_per_visitor_rounds_to_one_decimal(): void
+    {
+        // 10/3 = 3.333... → round(x, 1) = 3.3, round(x, 2) = 3.33
+        $pageViews = \Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison::from(10, 10);
+        $visitors = \Jackfumanchu\CookielessAnalyticsBundle\Service\PeriodComparison::from(3, 3);
+
+        $result = $this->comparer->comparePagesPerVisitor($pageViews, $visitors);
+
+        self::assertSame(3.3, $result->currentFloat);
+        self::assertSame(3.3, $result->previousFloat);
+    }
 }

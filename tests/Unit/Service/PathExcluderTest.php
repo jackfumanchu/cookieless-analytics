@@ -63,4 +63,13 @@ class PathExcluderTest extends TestCase
         self::assertTrue($excluder->isExcluded('/admin/users'));
         self::assertFalse($excluder->isExcluded('/dashboard/admin'));
     }
+
+    #[Test]
+    public function is_excluded_with_url_containing_host_extracts_path(): void
+    {
+        $excluder = new PathExcluder(['^/admin']);
+
+        self::assertTrue($excluder->isExcluded('https://example.com/admin/settings'));
+        self::assertFalse($excluder->isExcluded('https://example.com/home'));
+    }
 }
