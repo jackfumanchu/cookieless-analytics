@@ -73,15 +73,21 @@ class PageViewRepository extends ServiceEntityRepository
     /**
      * @return list<array{pageUrl: string, views: int, uniqueVisitors: int}>
      */
-    public function findTopPages(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit = 10): array
+    public function findTopPages(\DateTimeImmutable $from, \DateTimeImmutable $to, int $limit = 10, ?string $search = null): array
     {
-        return $this->createQueryBuilder('p')
+        $qb = $this->createQueryBuilder('p')
             ->select('p.pageUrl, COUNT(p.id) AS views, COUNT(DISTINCT p.fingerprint) AS uniqueVisitors')
             ->where('p.viewedAt >= :from')
             ->andWhere('p.viewedAt <= :to')
             ->setParameter('from', $from)
-            ->setParameter('to', $to)
-            ->groupBy('p.pageUrl')
+            ->setParameter('to', $to);
+
+        if ($search !== null && $search !== '') {
+            $qb->andWhere('p.pageUrl LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        return $qb->groupBy('p.pageUrl')
             ->orderBy('views', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()

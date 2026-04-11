@@ -212,6 +212,42 @@ class PageViewRepositoryTest extends KernelTestCase
     }
 
     #[Test]
+    public function find_top_pages_with_search_filters_by_url(): void
+    {
+        $fp = str_repeat('a', 64);
+
+        $this->createPageView('/en/blog/hello-world', $fp, '2026-04-05');
+        $this->createPageView('/en/blog/second-post', $fp, '2026-04-06');
+        $this->createPageView('/en/about', $fp, '2026-04-05');
+        $this->createPageView('/en/contact', $fp, '2026-04-06');
+
+        $from = new \DateTimeImmutable('2026-04-05 00:00:00');
+        $to = new \DateTimeImmutable('2026-04-07 23:59:59');
+
+        $result = $this->repository->findTopPages($from, $to, 10, 'blog');
+
+        self::assertCount(2, $result);
+        self::assertSame('/en/blog/hello-world', $result[0]['pageUrl']);
+        self::assertSame('/en/blog/second-post', $result[1]['pageUrl']);
+    }
+
+    #[Test]
+    public function find_top_pages_without_search_returns_all(): void
+    {
+        $fp = str_repeat('a', 64);
+
+        $this->createPageView('/en/blog/hello-world', $fp, '2026-04-05');
+        $this->createPageView('/en/about', $fp, '2026-04-05');
+
+        $from = new \DateTimeImmutable('2026-04-05 00:00:00');
+        $to = new \DateTimeImmutable('2026-04-07 23:59:59');
+
+        $result = $this->repository->findTopPages($from, $to, 10, null);
+
+        self::assertCount(2, $result);
+    }
+
+    #[Test]
     public function count_unique_visitors_by_period_for_page_filters_by_url(): void
     {
         $fp = str_repeat('a', 64);
