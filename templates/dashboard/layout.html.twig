@@ -246,10 +246,13 @@
         }
     });
 
-    // Clear all navigated Turbo Frame src attributes before full page visits
-    // so Turbo uses inline content from the new page response (not stale src)
+    // Clear non-lazy Turbo Frame src attributes before full page visits
+    // so Turbo uses inline content from the new page response (not stale src).
+    // Only targets frames without loading="lazy" — those are sub-page frames
+    // whose src was set dynamically (e.g. by row-select). Lazy frames (overview)
+    // are recreated from the server response anyway.
     document.addEventListener("turbo:before-visit", () => {
-        document.querySelectorAll("turbo-frame[src]").forEach(frame => {
+        document.querySelectorAll('turbo-frame[src]:not([loading="lazy"])').forEach(frame => {
             frame.removeAttribute("src");
         });
     });

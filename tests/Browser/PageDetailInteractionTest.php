@@ -67,9 +67,9 @@ class PageDetailInteractionTest extends PantherTestCase
         $detail = $client->getCrawler()->filter('#ca-page-detail')->text();
         self::assertStringContainsString('/home', $detail);
 
-        // Click the second row (/about)
+        // Click the second row (/about) and wait for the detail frame to update
         $client->getCrawler()->filter('.pages-table tbody tr')->eq(1)->click();
-        usleep(1_500_000); // Wait for Turbo Frame to load
+        $client->waitForElementToContain('#ca-page-detail', '/about', 5);
 
         // Second row should now be selected
         $rows = $client->getCrawler()->filter('.pages-table tbody tr');
@@ -91,14 +91,17 @@ class PageDetailInteractionTest extends PantherTestCase
         $client->request('GET', "/analytics/pages?from={$today}&to={$today}");
         $client->waitFor('.page-layout', 5);
 
-        // Click second row (/about)
+        // Click second row (/about) and wait for detail frame
         $client->getCrawler()->filter('.pages-table tbody tr')->eq(1)->click();
-        usleep(1_500_000);
+        $client->waitForElementToContain('#ca-page-detail', '/about', 5);
 
-        // Type a search that matches /about
+        // Type a search that matches /about — wait for debounce + frame load
         $searchInput = $client->getCrawler()->filter('.search-input');
         $searchInput->sendKeys('about');
-        usleep(1_000_000); // Wait for debounce + Turbo Frame load
+
+        // Wait for the search results to filter (only 1 row visible)
+        $client->waitFor('.pages-table tbody tr', 5);
+        usleep(500_000); // small buffer for Stimulus debounce + frame swap
 
         // /about row should still be highlighted after search re-renders the list
         $rows = $client->getCrawler()->filter('.pages-table tbody tr');
@@ -117,15 +120,16 @@ class PageDetailInteractionTest extends PantherTestCase
         $client->request('GET', "/analytics/pages?from={$from}&to={$today}");
         $client->waitFor('.page-layout', 5);
 
-        // Click a row to set frame.src
+        // Click a row to set frame.src, wait for detail to load
         $client->getCrawler()->filter('.pages-table tbody tr')->eq(1)->click();
-        usleep(1_500_000);
+        $client->waitForElementToContain('#ca-page-detail', '/about', 5);
 
-        // Change date range — click "1D" shortcut (triggers Turbo.visit, full page reload)
+        // Change date range — click "1D" shortcut (triggers Turbo.visit)
         $client->getCrawler()->filter('.period-btn')->first()->click();
-        usleep(2_000_000);
+        // Wait for the full page reload to complete
+        $client->waitFor('.pages-table', 5);
 
-        // Page should not show Turbo "Content missing" error after date change
+        // Page should not show Turbo "Content missing" error
         $body = $client->getCrawler()->filter('body')->text();
         self::assertStringNotContainsString('Content missing', $body, 'Page should not show Turbo "Content missing" error after date change');
         // The pages table should still be visible

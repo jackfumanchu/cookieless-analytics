@@ -117,8 +117,9 @@ class DashboardNavigationTest extends PantherTestCase
         $client->request('GET', "/analytics/pages?from={$from}&to={$today}");
         $client->waitFor('.page-layout', 5);
 
-        // Click "1D" shortcut — should reload the page with new dates
+        // Click "1D" shortcut — should reload the page with new dates (Turbo.visit)
         $client->getCrawler()->filter('.period-btn')->first()->click();
+        // Turbo.visit triggers full page navigation — wait for it to complete
         usleep(1_000_000);
 
         // URL should now have today as both from and to
