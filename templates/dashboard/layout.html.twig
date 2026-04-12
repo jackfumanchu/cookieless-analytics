@@ -182,11 +182,11 @@
                 link.href = href.toString();
             });
 
-            // If there are turbo frames (overview page), update them in place
-            const frames = document.querySelectorAll('turbo-frame[id^="ca-"]');
-            if (frames.length > 0) {
+            // Overview page has lazy-loading frames — update them in place
+            const lazyFrames = document.querySelectorAll('turbo-frame[loading="lazy"]');
+            if (lazyFrames.length > 0) {
                 window.history.replaceState({}, "", url);
-                frames.forEach(frame => {
+                lazyFrames.forEach(frame => {
                     const src = new URL(frame.src || frame.getAttribute("src"), window.location.origin);
                     src.searchParams.set("from", from);
                     src.searchParams.set("to", to);
@@ -244,6 +244,14 @@
                 frame.src = this.urlValue + "?" + params.toString();
             }
         }
+    });
+
+    // Clear all navigated Turbo Frame src attributes before full page visits
+    // so Turbo uses inline content from the new page response (not stale src)
+    document.addEventListener("turbo:before-visit", () => {
+        document.querySelectorAll("turbo-frame[src]").forEach(frame => {
+            frame.removeAttribute("src");
+        });
     });
 
     // Row-Select Controller

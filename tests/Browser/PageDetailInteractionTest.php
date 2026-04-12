@@ -105,4 +105,30 @@ class PageDetailInteractionTest extends PantherTestCase
         self::assertCount(1, $rows, 'Search should filter to 1 result');
         self::assertStringContainsString('selected', $rows->first()->attr('class') ?? '');
     }
+
+    #[Test]
+    public function date_change_after_row_click_preserves_content(): void
+    {
+        static::startWebServer(['port' => 9180, 'webServerDir' => __DIR__ . '/../App/public']);
+        $client = PantherClient::createChromeClient(self::chromeDriverBinary(), null, [], 'http://127.0.0.1:9180');
+        $today = (new \DateTimeImmutable('today'))->format('Y-m-d');
+        $from = (new \DateTimeImmutable('today'))->modify('-29 days')->format('Y-m-d');
+
+        $client->request('GET', "/analytics/pages?from={$from}&to={$today}");
+        $client->waitFor('.page-layout', 5);
+
+        // Click a row to set frame.src
+        $client->getCrawler()->filter('.pages-table tbody tr')->eq(1)->click();
+        usleep(1_500_000);
+
+        // Change date range — click "1D" shortcut (triggers Turbo.visit, full page reload)
+        $client->getCrawler()->filter('.period-btn')->first()->click();
+        usleep(2_000_000);
+
+        // Page should not show Turbo "Content missing" error after date change
+        $body = $client->getCrawler()->filter('body')->text();
+        self::assertStringNotContainsString('Content missing', $body, 'Page should not show Turbo "Content missing" error after date change');
+        // The pages table should still be visible
+        self::assertGreaterThan(0, count($client->getCrawler()->filter('.pages-table')), 'Pages table should be visible after date change');
+    }
 }
