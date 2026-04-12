@@ -657,7 +657,7 @@ class DashboardControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(200);
         $content = $client->getResponse()->getContent();
-        self::assertSame(5, substr_count($content, '<tr>') - 1);
+        self::assertSame(5, substr_count($content, '<tr') - 1);
         self::assertStringNotContainsString('/about/team', $content);
     }
 }

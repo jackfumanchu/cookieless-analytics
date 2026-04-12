@@ -29,7 +29,11 @@
     <turbo-frame id="ca-pages-list">
     <div class="list-pane">
       {% if pages|length > 0 %}
-      <table class="pages-table">
+      <table class="pages-table"
+             data-controller="row-select"
+             data-row-select-url-value="{{ path('cookieless_analytics_dashboard_pages_view') }}"
+             data-row-select-from-value="{{ from }}"
+             data-row-select-to-value="{{ to }}">
         <thead>
           <tr>
             <th></th>
@@ -40,7 +44,9 @@
         </thead>
         <tbody>
           {% for page in pages %}
-          <tr{% if selectedDetail and selectedDetail.pageUrl == page.pageUrl %} class="selected"{% endif %}>
+          <tr{% if selectedDetail and selectedDetail.pageUrl == page.pageUrl %} class="selected"{% endif %}
+              data-action="click->row-select#select"
+              data-row-select-page-url-param="{{ page.pageUrl }}">
             <td class="rank-col">{{ '%02d'|format(offset + loop.index) }}</td>
             <td class="url-col">{{ page.pageUrl }}</td>
             <td class="num-col">{{ page.views|number_format(0, '.', ',') }}</td>
