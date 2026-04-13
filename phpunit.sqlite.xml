@@ -11,7 +11,7 @@
         <server name="APP_ENV" value="test" force="true" />
         <server name="SHELL_VERBOSITY" value="-1" />
         <server name="KERNEL_CLASS" value="Jackfumanchu\CookielessAnalyticsBundle\Tests\App\Kernel" force="true" />
-        <env name="DATABASE_URL" value="sqlite:///tmp/cookieless_analytics_test.db" force="true" />
+        <env name="DATABASE_URL" value="sqlite:////tmp/cookieless_analytics_test.db" force="true" />
     </php>
 
     <testsuites>
