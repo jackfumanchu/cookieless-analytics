@@ -211,6 +211,7 @@ This bundle is designed to operate **without a cookie consent banner** under the
 - [ ] UTM campaign parameter tracking
 - [ ] Weekly summary email report
 - [ ] Dashboard without Turbo (static fallback)
+- [ ] Symfony Flex recipe (auto-configure, post-install message)
 
 ---
 
