@@ -18,6 +18,7 @@
         <server name="SHELL_VERBOSITY" value="-1" />
         <server name="KERNEL_CLASS" value="Jackfumanchu\CookielessAnalyticsBundle\Tests\App\Kernel" force="true" />
         <server name="PANTHER_APP_ENV" value="test" force="true" />
+        <env name="DATABASE_URL" value="postgresql://catest:c4f3st@localhost/cookieless_analytics_test" />
         <env name="PANTHER_WEB_SERVER_PORT" value="9180" />
         <env name="PANTHER_CHROME_DRIVER_BINARY" value="drivers\chromedriver.exe" />
     </php>
