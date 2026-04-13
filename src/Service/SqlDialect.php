@@ -36,4 +36,13 @@ final class SqlDialect
             'sqlite' => "strftime('%Y-%m-%d', {$column})",
         };
     }
+
+    public function extractDomain(string $column): string
+    {
+        return match ($this->platform) {
+            'postgresql' => "SUBSTRING({$column} FROM '://([^/]+)')",
+            'mysql' => "SUBSTRING_INDEX(SUBSTRING_INDEX({$column}, '://', -1), '/', 1)",
+            'sqlite' => "RTRIM(REPLACE(REPLACE({$column}, 'https://', ''), 'http://', ''), '/')",
+        };
+    }
 }
