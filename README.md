@@ -44,17 +44,10 @@ anonymous fingerprint — no personal data is ever stored.
 
 ```bash
 composer require jackfumanchu/cookieless-analytics-bundle
+php bin/console cookieless:install
 ```
 
-Run the provided migration to create the required tables:
-
-```bash
-php bin/console doctrine:migrations:migrate
-```
-
-> **Note:** The bundle ships with a migration file under `migrations/`. Copy it into your project's
-> migrations directory before running the command, or let the bundle auto-register it
-> (see [Configuration](#configuration)).
+The `cookieless:install` command creates the required database tables. It is safe to run multiple times — on subsequent runs it will apply any schema updates or report that nothing changed.
 
 ---
 
