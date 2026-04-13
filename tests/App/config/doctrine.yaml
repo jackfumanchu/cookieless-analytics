@@ -1,6 +1,8 @@
+parameters:
+    env(DATABASE_URL): 'postgresql://catest:c4f3st@localhost/cookieless_analytics_test'
+
 doctrine:
     dbal:
-        driver: pdo_pgsql
         url: '%env(DATABASE_URL)%'
         # TEST_TOKEN is set by ParaTest/Infection for parallel processes
         dbname_suffix: '%env(default::TEST_TOKEN)%'
