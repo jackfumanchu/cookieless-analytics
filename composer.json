@@ -2,6 +2,7 @@
     "name": "jackfumanchu/cookieless-analytics-bundle",
     "description": "Lightweight, cookieless, GDPR-compliant analytics bundle for Symfony 7.4+",
     "type": "symfony-bundle",
+    "keywords": ["analytics", "cookieless", "gdpr", "privacy", "symfony", "tracking", "page-views", "events", "dashboard"],
     "license": "MIT",
     "authors": [
         {
