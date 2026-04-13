@@ -21,7 +21,7 @@ anonymous fingerprint — no personal data is ever stored.
 
 - ✅ **Cookieless by design** — no consent banner required under GDPR/ePrivacy
 - ✅ **Self-hosted** — all data stays on your own server
-- ✅ **PostgreSQL native** — no extra database engine required
+- ✅ **Multi-database** — supports PostgreSQL, MySQL, and SQLite
 - ✅ **Daily visitors per page** — via anonymous daily fingerprint (IP + User-Agent, hashed and rotated)
 - ✅ **Navigation path tracking** — sequential page visits per anonymous session
 - ✅ **Custom event tracking** — track any click or interaction with a `data-` attribute
@@ -36,7 +36,7 @@ anonymous fingerprint — no personal data is ever stored.
 - PHP 8.2+
 - Symfony 7.4 or 8.x
 - Doctrine ORM 3.x
-- PostgreSQL 12.14+
+- PostgreSQL 12+, MySQL 5.7+ / MariaDB 10.3+, or SQLite 3
 
 ---
 
