@@ -16,19 +16,21 @@ require dirname(__DIR__) . '/vendor/autoload.php';
     $conn = $em->getConnection();
 
     $params = $conn->getParams();
-    $dbName = $params['dbname'];
 
-    // Connect without a database to create it if needed
-    $tmpParams = $params;
-    $tmpParams['dbname'] = 'postgres';
-    $tmpConn = \Doctrine\DBAL\DriverManager::getConnection($tmpParams);
+    // Create database (skip for SQLite — file is created automatically)
+    if (!$conn->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\SQLitePlatform) {
+        $dbName = $params['dbname'];
+        $tmpParams = $params;
+        $tmpParams['dbname'] = 'postgres';
+        $tmpConn = \Doctrine\DBAL\DriverManager::getConnection($tmpParams);
 
-    try {
-        $tmpConn->executeStatement(sprintf('CREATE DATABASE "%s"', $dbName));
-    } catch (\Doctrine\DBAL\Exception) {
-        // Database already exists — ignore
+        try {
+            $tmpConn->executeStatement(sprintf('CREATE DATABASE "%s"', $dbName));
+        } catch (\Doctrine\DBAL\Exception) {
+            // Database already exists — ignore
+        }
+        $tmpConn->close();
     }
-    $tmpConn->close();
 
     // Now create the schema
     $schemaTool = new \Doctrine\ORM\Tools\SchemaTool($em);
