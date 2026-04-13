@@ -58,6 +58,7 @@ jobs:
         run: vendor/bin/infection --threads=4 --no-progress --logger-github --coverage=coverage
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost/cookieless_analytics_test
+          STRYKER_DASHBOARD_API_KEY: ${{ secrets.STRYKER_DASHBOARD_API_KEY }}
 
   quality:
     name: Code quality

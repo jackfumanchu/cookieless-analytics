@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/jackfumanchu/cookieless-analytics-bundle/actions/workflows/ci.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-90%25-brightgreen)
-![MSI](https://img.shields.io/badge/MSI-99%25-brightgreen)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fjackfumanchu%2Fcookieless-analytics-bundle%2Fmain)](https://dashboard.stryker-mutator.io/reports/github.com/jackfumanchu/cookieless-analytics-bundle/main)
 ![PHPStan](https://img.shields.io/badge/PHPStan-level%206-brightgreen)
 
 A lightweight, self-hosted, **cookieless** analytics bundle for Symfony 7.4+.
