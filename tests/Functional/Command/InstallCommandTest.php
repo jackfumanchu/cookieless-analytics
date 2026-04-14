@@ -114,6 +114,68 @@ class InstallCommandTest extends KernelTestCase
         self::assertContains('idx_event_name', $indexNames);
     }
 
+    #[Test]
+    public function install_creates_route_config_when_routes_dir_exists(): void
+    {
+        $routesDir = self::getContainer()->get('kernel')->getProjectDir() . '/config/routes';
+        $routeFile = $routesDir . '/cookieless_analytics.yaml';
+
+        @mkdir($routesDir, 0755, true);
+        @unlink($routeFile);
+
+        try {
+            $this->tester->execute([]);
+
+            self::assertSame(0, $this->tester->getStatusCode());
+            self::assertFileExists($routeFile);
+            $content = file_get_contents($routeFile);
+            self::assertStringContainsString('RouteLoader', $content);
+            self::assertStringEndsWith("\n", $content, 'Route config file should end with a newline');
+            self::assertStringContainsString('Created config/routes/cookieless_analytics.yaml', $this->tester->getDisplay());
+        } finally {
+            @unlink($routeFile);
+            @rmdir($routesDir);
+        }
+    }
+
+    #[Test]
+    public function install_skips_route_config_when_file_already_exists(): void
+    {
+        $routesDir = self::getContainer()->get('kernel')->getProjectDir() . '/config/routes';
+        $routeFile = $routesDir . '/cookieless_analytics.yaml';
+
+        @mkdir($routesDir, 0755, true);
+        file_put_contents($routeFile, 'existing content');
+
+        try {
+            $this->tester->execute([]);
+
+            self::assertSame(0, $this->tester->getStatusCode());
+            self::assertSame('existing content', file_get_contents($routeFile), 'Existing route file should not be overwritten');
+            self::assertStringNotContainsString('Created config/routes', $this->tester->getDisplay());
+        } finally {
+            @unlink($routeFile);
+            @rmdir($routesDir);
+        }
+    }
+
+    #[Test]
+    public function install_skips_route_config_when_routes_dir_missing(): void
+    {
+        $routesDir = self::getContainer()->get('kernel')->getProjectDir() . '/config/routes';
+        $routeFile = $routesDir . '/cookieless_analytics.yaml';
+
+        // Ensure directory does not exist
+        @unlink($routeFile);
+        @rmdir($routesDir);
+
+        $this->tester->execute([]);
+
+        self::assertSame(0, $this->tester->getStatusCode());
+        self::assertFileDoesNotExist($routeFile);
+        self::assertStringNotContainsString('Created config/routes', $this->tester->getDisplay());
+    }
+
     private function dropBundleTables(): void
     {
         $this->connection->executeStatement('DROP TABLE IF EXISTS ca_page_view');

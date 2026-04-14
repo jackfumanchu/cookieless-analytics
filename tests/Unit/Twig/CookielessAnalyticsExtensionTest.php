@@ -85,6 +85,38 @@ class CookielessAnalyticsExtensionTest extends TestCase
     }
 
     #[Test]
+    public function render_script_wraps_push_state_for_spa_tracking(): void
+    {
+        $extension = $this->createExtension();
+
+        $script = $extension->renderScript();
+
+        self::assertStringContainsString('history.pushState', $script);
+        self::assertStringContainsString('history.replaceState', $script);
+    }
+
+    #[Test]
+    public function render_script_listens_for_popstate(): void
+    {
+        $extension = $this->createExtension();
+
+        $script = $extension->renderScript();
+
+        self::assertStringContainsString('popstate', $script);
+    }
+
+    #[Test]
+    public function render_script_deduplicates_by_url(): void
+    {
+        $extension = $this->createExtension();
+
+        $script = $extension->renderScript();
+
+        // The track function should compare against a last-sent URL to avoid duplicates
+        self::assertStringContainsString('if(url===last)return', $script);
+    }
+
+    #[Test]
     public function get_globals_returns_days_active_from_earliest_view(): void
     {
         $repo = $this->createStub(PageViewRepository::class);

@@ -8,7 +8,9 @@ use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Jackfumanchu\CookielessAnalyticsBundle\CookielessAnalyticsBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
+use Jackfumanchu\CookielessAnalyticsBundle\Tests\App\Controller\TrackingTestController;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
 class Kernel extends BaseKernel
@@ -29,13 +31,18 @@ class Kernel extends BaseKernel
         $loader->load(__DIR__ . '/config/doctrine.yaml');
         $loader->load(__DIR__ . '/config/cookieless_analytics.yaml');
 
-        if (PHP_VERSION_ID >= 80400) {
-            $loader->load(static function ($container) {
+        $loader->load(static function (ContainerBuilder $container) {
+            $container->register(TrackingTestController::class)
+                ->setAutowired(true)
+                ->setPublic(true)
+                ->addTag('controller.service_arguments');
+
+            if (PHP_VERSION_ID >= 80400) {
                 $container->loadFromExtension('doctrine', [
                     'orm' => ['enable_native_lazy_objects' => true],
                 ]);
-            });
-        }
+            }
+        });
     }
 
     public function getProjectDir(): string

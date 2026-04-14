@@ -50,9 +50,19 @@ class CookielessAnalyticsExtension extends AbstractExtension implements GlobalsI
         (function(){
             if(typeof navigator.sendBeacon!=='function')return;
             var b=function(u,d){navigator.sendBeacon(u,new Blob([d],{type:'application/json'}));};
-            document.addEventListener('DOMContentLoaded',function(){
-                b('{$collectEndpoint}',JSON.stringify({url:location.pathname+location.search,referrer:document.referrer||''}));
-            });
+            var ce='{$collectEndpoint}',last='';
+            var t=function(){
+                var url=location.pathname+location.search;
+                if(url===last)return;
+                var ref=last||document.referrer||'';
+                last=url;
+                b(ce,JSON.stringify({url:url,referrer:ref}));
+            };
+            var w=function(f){return function(){var r=f.apply(this,arguments);t();return r;};};
+            history.pushState=w(history.pushState);
+            history.replaceState=w(history.replaceState);
+            window.addEventListener('popstate',t);
+            document.addEventListener('DOMContentLoaded',t);
             document.addEventListener('click',function(e){
                 var el=e.target.closest('[data-ca-event]');
                 if(!el)return;

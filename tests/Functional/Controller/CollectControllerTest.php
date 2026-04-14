@@ -84,6 +84,28 @@ class CollectControllerTest extends WebTestCase
     }
 
     #[Test]
+    public function collect_multiple_requests_from_same_client_share_fingerprint(): void
+    {
+        $client = static::createClient();
+
+        $client->request('POST', '/ca/collect', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['url' => '/page-1']));
+        self::assertResponseStatusCodeSame(204);
+
+        $client->request('POST', '/ca/collect', [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode(['url' => '/page-2']));
+        self::assertResponseStatusCodeSame(204);
+
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $pageViews = $em->getRepository(PageView::class)->findAll();
+
+        self::assertCount(2, $pageViews);
+        self::assertSame($pageViews[0]->getFingerprint(), $pageViews[1]->getFingerprint(), 'Requests from the same client should share the same fingerprint');
+    }
+
+    #[Test]
     public function collect_with_missing_url_returns_400(): void
     {
         $client = static::createClient();
