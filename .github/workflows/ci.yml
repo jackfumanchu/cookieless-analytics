@@ -98,10 +98,10 @@ jobs:
       - uses: actions/cache@v4
         with:
           path: vendor
-          key: composer-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
+          key: composer-${{ matrix.php }}-${{ hashFiles('composer.json') }}
           restore-keys: composer-${{ matrix.php }}-
 
-      - run: composer install --no-progress --prefer-dist --no-interaction
+      - run: composer update --no-progress --prefer-dist
 
       - run: vendor/bin/phpunit --testsuite default --no-coverage
         env:

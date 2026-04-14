@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Jackfumanchu\CookielessAnalyticsBundle\Tests\App;
 
+use Composer\InstalledVersions;
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Jackfumanchu\CookielessAnalyticsBundle\CookielessAnalyticsBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -37,7 +38,7 @@ class Kernel extends BaseKernel
                 ->setPublic(true)
                 ->addTag('controller.service_arguments');
 
-            if (PHP_VERSION_ID >= 80400) {
+            if (PHP_VERSION_ID >= 80400 && InstalledVersions::satisfies(new \Composer\Semver\VersionParser(), 'doctrine/doctrine-bundle', '>=3.1')) {
                 $container->loadFromExtension('doctrine', [
                     'orm' => ['enable_native_lazy_objects' => true],
                 ]);
