@@ -1,0 +1,89 @@
+name: Dependency compatibility
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # every Monday at 6am UTC
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  latest:
+    name: Latest deps (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - run: composer update --no-progress --prefer-dist
+
+      - run: vendor/bin/phpunit --testsuite default --no-coverage
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost/cookieless_analytics_test
+
+      - name: SQLite integration tests
+        run: vendor/bin/phpunit -c phpunit.sqlite.xml --no-coverage
+
+  lowest:
+    name: Lowest deps (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.4']
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+
+      - run: composer update --no-progress --prefer-dist --prefer-lowest --prefer-stable
+
+      - run: vendor/bin/phpunit --testsuite default --no-coverage
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost/cookieless_analytics_test
+
+      - name: SQLite integration tests
+        run: vendor/bin/phpunit -c phpunit.sqlite.xml --no-coverage
+
