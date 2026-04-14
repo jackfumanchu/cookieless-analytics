@@ -11,6 +11,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 #[AsCommand(
     name: 'cookieless:install',
@@ -21,6 +22,7 @@ class InstallCommand extends Command
     public function __construct(
         private readonly Connection $connection,
         private readonly SqlDialect $sqlDialect,
+        private readonly KernelInterface $kernel,
     ) {
         parent::__construct();
     }
@@ -61,8 +63,32 @@ class InstallCommand extends Command
         $this->connection->executeStatement('CREATE INDEX IF NOT EXISTS idx_event_recorded_at ON ca_analytics_event (recorded_at)');
         $this->connection->executeStatement('CREATE INDEX IF NOT EXISTS idx_event_name ON ca_analytics_event (name)');
 
+        $this->installRouteConfig($io);
+
         $io->success('CookielessAnalytics installed successfully.');
 
         return Command::SUCCESS;
+    }
+
+    private function installRouteConfig(SymfonyStyle $io): void
+    {
+        $routesDir = $this->kernel->getProjectDir() . '/config/routes';
+        $routeFile = $routesDir . '/cookieless_analytics.yaml';
+
+        if (file_exists($routeFile)) {
+            return;
+        }
+
+        if (!is_dir($routesDir)) {
+            return;
+        }
+
+        file_put_contents($routeFile, <<<'YAML'
+            cookieless_analytics:
+                resource: Jackfumanchu\CookielessAnalyticsBundle\Routing\RouteLoader
+                type: service
+            YAML. "\n");
+
+        $io->note('Created config/routes/cookieless_analytics.yaml');
     }
 }

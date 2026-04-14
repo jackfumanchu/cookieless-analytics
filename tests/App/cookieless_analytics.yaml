@@ -1,0 +1,3 @@
+cookieless_analytics:
+    resource: Jackfumanchu\CookielessAnalyticsBundle\Routing\RouteLoader
+    type: service

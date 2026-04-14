@@ -102,9 +102,9 @@ class CookielessAnalyticsBundle extends AbstractBundle
 
         $services->set(EventDetailBuilder::class);
 
-        $services->set(CollectController::class);
+        $services->set(CollectController::class)->autoconfigure(false)->tag('controller.service_arguments');
 
-        $services->set(EventController::class);
+        $services->set(EventController::class)->autoconfigure(false)->tag('controller.service_arguments');
 
         $services->set(InstallCommand::class);
 
@@ -119,10 +119,14 @@ class CookielessAnalyticsBundle extends AbstractBundle
 
         if ($config['dashboard_enabled']) {
             $services->set(DashboardController::class)
+                ->autoconfigure(false)
+                ->tag('controller.service_arguments')
                 ->arg('$dashboardRole', $config['dashboard_role'])
                 ->arg('$dashboardLayout', $config['dashboard_layout']);
 
             $services->set(DashboardFrameController::class)
+                ->autoconfigure(false)
+                ->tag('controller.service_arguments')
                 ->arg('$dashboardRole', $config['dashboard_role']);
         }
     }
